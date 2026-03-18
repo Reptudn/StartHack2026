@@ -6,6 +6,7 @@ import (
 	"epaccdataunifier/config"
 	"epaccdataunifier/database"
 	"epaccdataunifier/handlers"
+	"epaccdataunifier/middleware"
 	"epaccdataunifier/models"
 
 	"github.com/gin-gonic/gin"
@@ -37,7 +38,7 @@ func main() {
 	r := gin.Default()
 
 	// Middleware
-	// r.Use(middleware.CORS(cfg.CORSOrigins))
+	r.Use(middleware.CORS(cfg.CORSOrigins))
 
 	// Max upload size
 	r.MaxMultipartMemory = cfg.MaxUploadMB << 20
