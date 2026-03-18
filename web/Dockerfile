@@ -22,6 +22,11 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Copy the custom nginx configuration
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copy entrypoint script
+COPY ./docker-entrypoint.sh /
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 4242
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

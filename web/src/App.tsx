@@ -1,87 +1,42 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import './App.css'
 import FileUpload from './components/FileUpload'
 import StatsCards from './components/StatsCards'
 import DataQualityTable from './components/DataQualityTable'
 import ErrorCorrectionPanel from './components/ErrorCorrectionPanel'
 import type { UploadedFile, FileError } from './components/FileUpload'
+import {
+  uploadFiles as apiUpload,
+  getFiles,
+  getFileErrors,
+  resolveError as apiResolve,
+  healthCheck,
+} from './api'
+import type { ApiFile, ApiError } from './api'
 
-// Simulate validation of uploaded files with realistic healthcare data errors
-function simulateValidation(file: File): UploadedFile {
-  const id = crypto.randomUUID()
-  const ext = file.name.split('.').pop()?.toLowerCase() || ''
-
-  // Simulate different validation outcomes
-  const rand = Math.random()
-  let status: UploadedFile['status']
-  let errorCount: number
-  let completeness: number
-  let errors: FileError[] = []
-  let columnsMapped: string[] = []
-
-  if (ext === 'csv' || ext === 'xlsx') {
-    columnsMapped = ['patient_id', 'case_id', 'timestamp', 'value'].slice(0, 2 + Math.floor(Math.random() * 3))
-  } else if (ext === 'pdf') {
-    columnsMapped = ['extracted_text']
-  } else {
-    columnsMapped = ['raw_data']
-  }
-
-  if (rand < 0.3) {
-    status = 'valid'
-    errorCount = 0
-    completeness = 85 + Math.floor(Math.random() * 16)
-  } else if (rand < 0.7) {
-    status = 'error'
-    errorCount = 1 + Math.floor(Math.random() * 4)
-    completeness = 50 + Math.floor(Math.random() * 35)
-
-    const errorTypes = [
-      { column: 'patient_id', original: 'NULL', suggested: 'P-00142', row: 12 },
-      { column: 'case_id', original: 'CASE-0135', suggested: '135', row: 24 },
-      { column: 'Natrium', original: 'unknow', suggested: '141 mmol/L', row: 7 },
-      { column: 'eGFR', original: 'N/A', suggested: '85.2 ml/min', row: 31 },
-      { column: 'CRP', original: 'Missing', suggested: '3.2 mg/L', row: 45 },
-      { column: 'timestamp', original: '2024-13-42', suggested: '2024-01-15', row: 8 },
-      { column: 'medication_name', original: '', suggested: 'Ibuprofen 400mg', row: 19 },
-      { column: 'fall_event_0_1', original: '2', suggested: '1', row: 102 },
-    ]
-
-    for (let i = 0; i < errorCount; i++) {
-      const template = errorTypes[Math.floor(Math.random() * errorTypes.length)]
-      errors.push({
-        id: crypto.randomUUID(),
-        column: template.column,
-        row: template.row + i * 10,
-        originalValue: template.original,
-        suggestedValue: template.suggested,
-        resolved: 'pending',
-      })
-    }
-  } else {
-    status = 'warning'
-    errorCount = 1
-    completeness = 70 + Math.floor(Math.random() * 20)
-    errors.push({
-      id: crypto.randomUUID(),
-      column: 'case_id',
-      row: 3,
-      originalValue: '  0135  ',
-      suggestedValue: '135',
-      resolved: 'pending',
-    })
-  }
-
+// Convert API types to UI types
+function toUploadedFile(f: ApiFile, errors: ApiError[] = []): UploadedFile {
   return {
-    id,
-    name: file.name,
-    size: file.size,
-    type: file.type || ext,
-    status,
-    errorCount,
-    completeness,
-    columnsMapped,
-    errors,
+    id: String(f.id),
+    name: f.filename,
+    size: f.file_size_bytes,
+    type: f.file_type,
+    status: f.status as UploadedFile['status'],
+    errorCount: f.error_count,
+    completeness: f.completeness,
+    columnsMapped: f.columns_mapped || [],
+    errors: errors.map(toFileError),
+  }
+}
+
+function toFileError(e: ApiError): FileError {
+  return {
+    id: String(e.id),
+    column: e.column_name,
+    row: e.row_number,
+    originalValue: e.original_value,
+    suggestedValue: e.suggested_value,
+    resolved: e.resolved as FileError['resolved'],
   }
 }
 
@@ -91,18 +46,73 @@ export default function App() {
   const [files, setFiles] = useState<UploadedFile[]>([])
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
   const [activePage, setActivePage] = useState<NavPage>('dashboard')
+  const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
-  const handleFilesUploaded = useCallback((newFiles: File[]) => {
-    const validated = newFiles.map(simulateValidation)
-    setFiles((prev) => [...prev, ...validated])
+  // Check backend health and load files on mount
+  useEffect(() => {
+    healthCheck().then((online) => {
+      setIsBackendOnline(online)
+      if (online) {
+        loadFiles()
+      }
+    })
   }, [])
 
-  const handleFixClick = useCallback((fileId: string) => {
-    setSelectedFileId((prev) => (prev === fileId ? null : fileId))
-  }, [])
+  const loadFiles = async () => {
+    try {
+      const apiFiles = await getFiles()
+      const converted = apiFiles.map((f) => toUploadedFile(f))
+      setFiles(converted)
+    } catch (err) {
+      console.error('Failed to load files:', err)
+    }
+  }
+
+  const handleFilesUploaded = useCallback(async (newFiles: File[]) => {
+    if (!isBackendOnline) {
+      // Fallback: simulate if backend is offline
+      console.warn('Backend offline, using simulated data')
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const results = await apiUpload(newFiles)
+      const converted = results.map((r) => toUploadedFile(r.file, r.errors))
+      setFiles((prev) => [...converted, ...prev])
+    } catch (err) {
+      console.error('Upload failed:', err)
+      alert('Upload failed: ' + (err instanceof Error ? err.message : 'Unknown error'))
+    } finally {
+      setIsUploading(false)
+    }
+  }, [isBackendOnline])
+
+  const handleFixClick = useCallback(async (fileId: string) => {
+    if (selectedFileId === fileId) {
+      setSelectedFileId(null)
+      return
+    }
+
+    // Load errors for this file from the API
+    try {
+      const errors = await getFileErrors(Number(fileId))
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileId ? { ...f, errors: errors.map(toFileError) } : f
+        )
+      )
+      setSelectedFileId(fileId)
+    } catch (err) {
+      console.error('Failed to load errors:', err)
+      setSelectedFileId(fileId)
+    }
+  }, [selectedFileId])
 
   const handleResolveError = useCallback(
-    (fileId: string, errorId: string, action: 'accepted' | 'rejected') => {
+    async (fileId: string, errorId: string, action: 'accepted' | 'rejected') => {
+      // Optimistic UI update
       setFiles((prev) =>
         prev.map((file) => {
           if (file.id !== fileId) return file
@@ -120,6 +130,15 @@ export default function App() {
           }
         })
       )
+
+      // Send to API
+      try {
+        await apiResolve(Number(fileId), Number(errorId), action)
+      } catch (err) {
+        console.error('Failed to resolve error:', err)
+        // Reload files to sync state
+        loadFiles()
+      }
     },
     []
   )
@@ -170,8 +189,8 @@ export default function App() {
         </nav>
         <div className="sidebar-footer">
           <div className="nav-item" style={{ cursor: 'default', opacity: 0.5 }}>
-            <span className="nav-icon">💡</span>
-            <span>v1.0.0</span>
+            <span className="nav-icon">{isBackendOnline === false ? '🔴' : isBackendOnline === true ? '🟢' : '⏳'}</span>
+            <span>{isBackendOnline === false ? 'Offline' : isBackendOnline === true ? 'Connected' : 'Checking...'}</span>
           </div>
         </div>
       </aside>
@@ -188,6 +207,9 @@ export default function App() {
             </h1>
             <p className="header-subtitle">Smart Health Data Mapping</p>
           </div>
+          {isUploading && (
+            <span style={{ color: 'var(--accent-light)', fontSize: '0.9rem' }}>⏳ Uploading...</span>
+          )}
         </header>
 
         <div className="main-body">

@@ -6,15 +6,16 @@ RUN apk add --no-cache git
 
 WORKDIR /app
 
-# Copy go.mod and go.sum (if it exists)
-COPY go.mod ./
-# RUN go mod download
+# Copy go.mod (go.sum may not exist yet)
+COPY go.mod go.sum* ./
 
 # Copy the source code
 COPY . .
 
+# Resolve dependencies and generate go.sum
+RUN go mod tidy
+
 # Build the application
-# We use CGO_ENABLED=0 for a statically linked binary
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 # Production stage
@@ -27,6 +28,9 @@ WORKDIR /root/
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/main .
+
+# Create uploads directory
+RUN mkdir -p /data/uploads
 
 # Expose the port the app runs on
 EXPOSE 8080
