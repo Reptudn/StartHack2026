@@ -56,6 +56,9 @@ func main() {
 		api.GET("/files/:id", handlers.GetFile)
 		api.POST("/files/:id/import", handlers.Import)
 		api.DELETE("/files/:id", handlers.DeleteFile)
+		api.POST("/log", handlers.CreateLog)
+		api.GET("/cache", handlers.GetCache)
+		api.POST("/cache", handlers.PostCache)
 	}
 
 	addr := ":" + cfg.Port
