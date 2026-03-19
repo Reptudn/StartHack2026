@@ -14,6 +14,7 @@ func RunMigrations() error {
 		&models.FileUpload{},
 		&models.MappingCache{},
 		&models.ValidationLog{},
+		&models.JobState{},
 		&models.TBCaseData{},
 		&models.TBImportAcData{},
 		&models.TBImportLabsData{},

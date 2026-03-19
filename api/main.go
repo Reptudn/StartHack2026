@@ -57,10 +57,16 @@ func main() {
 		api.GET("/files", handlers.ListFiles)
 		api.GET("/files/:id", handlers.GetFile)
 		api.POST("/files/:id/import", handlers.Import)
+		api.POST("/files/:id/reprocess", handlers.ReprocessFile(cfg))
 		api.DELETE("/files/:id", handlers.DeleteFile)
 		api.POST("/log", handlers.CreateLog)
 		api.GET("/cache", handlers.GetCache)
 		api.POST("/cache", handlers.PostCache)
+
+		// Job progress (SSE)
+		api.POST("/jobs/:id/progress", handlers.PostProgress)
+		api.GET("/jobs/:id/stream", handlers.StreamProgress)
+		api.GET("/jobs/:id", handlers.GetProgress)
 	}
 
 	addr := ":" + cfg.Port

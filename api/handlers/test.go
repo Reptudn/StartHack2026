@@ -257,11 +257,24 @@ func (h *TestHandler) attemptImport(fileRecord models.FileUpload, mapping models
 	}
 
 	var batch []map[string]interface{}
+
+	// Build case-insensitive header lookup
+	fileHeadersLower := make(map[string]string, len(parsed.Headers))
+	for _, h := range parsed.Headers {
+		fileHeadersLower[strings.ToLower(h)] = h
+	}
+
 	for _, row := range parsed.Rows {
 		rowMap := make(map[string]interface{})
 		for _, colMap := range mapping.ColumnMappings {
 			if colMap.DBColumn != "" && colMap.DBColumn != "unknown" {
 				val, exists := row.Fields[colMap.FileColumn]
+				if !exists {
+					if actualHeader, ok := fileHeadersLower[strings.ToLower(colMap.FileColumn)]; ok {
+						val = row.Fields[actualHeader]
+						exists = true
+					}
+				}
 				if exists && val != "" {
 					if strings.EqualFold(colMap.DBColumn, "coCaseId") {
 						val = normalizeCaseId(val)

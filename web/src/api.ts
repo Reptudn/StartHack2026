@@ -29,11 +29,22 @@ export interface ApiFile {
   row_count: number
   mapping_result: string
   saved_path?: string
+  job_id?: string
 }
 
 export interface ApiUploadResponse {
   file: ApiFile
   mapping?: MLMapping
+  job_id?: string
+}
+
+export interface JobProgress {
+  job_id: string
+  stage: string      // extract | inspect | classify | map | done | error
+  message: string
+  percent: number    // 0-100
+  timestamp?: number
+  data?: Record<string, unknown>  // rich stage-specific detail
 }
 
 // ========== API Functions ==========
@@ -54,6 +65,55 @@ export async function uploadFiles(files: File[], sample20: boolean = true): Prom
   }
 
   return res.json()
+}
+
+export function subscribeToProgress(
+  jobId: string,
+  onUpdate: (progress: JobProgress) => void,
+  onDone: () => void,
+): () => void {
+  let closed = false
+  let retries = 0
+  const maxRetries = 30 // up to ~60s of retries
+
+  const connect = () => {
+    if (closed) return
+    const es = new EventSource(`${API_URL}/api/jobs/${jobId}/stream`)
+
+    es.addEventListener('progress', (event: MessageEvent) => {
+      try {
+        const data: JobProgress = JSON.parse(event.data)
+        retries = 0 // reset retry counter on successful event
+        onUpdate(data)
+        // ONLY call onDone when the server explicitly says done/error
+        if (data.stage === 'done' || data.stage === 'error') {
+          closed = true
+          es.close()
+          onDone()
+        }
+      } catch {
+        // ignore parse errors from keepalive comments
+      }
+    })
+
+    es.onerror = () => {
+      es.close()
+      if (!closed) {
+        // Connection lost but job may still be running — reconnect
+        retries++
+        if (retries <= maxRetries) {
+          setTimeout(connect, 2000) // retry after 2s
+        } else {
+          // Too many retries — give up
+          closed = true
+          onDone()
+        }
+      }
+    }
+  }
+
+  connect()
+  return () => { closed = true }
 }
 
 export async function getFiles(): Promise<ApiFile[]> {
@@ -103,6 +163,27 @@ export async function importFile(fileId: number, mapping: MLMapping): Promise<{ 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err.error || 'Failed to import data')
+  }
+  return res.json()
+}
+
+export async function getJobProgress(jobId: string): Promise<JobProgress | null> {
+  try {
+    const res = await fetch(`${API_URL}/api/jobs/${jobId}`)
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
+export async function reprocessFile(fileId: number): Promise<{ job_id: string }> {
+  const res = await fetch(`${API_URL}/api/files/${fileId}/reprocess`, {
+    method: 'POST',
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || 'Failed to reprocess file')
   }
   return res.json()
 }

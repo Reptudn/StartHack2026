@@ -14,6 +14,7 @@ type FileUpload struct {
 	RowCount      int       `json:"row_count" gorm:"default:0"`
 	MappingResult string    `json:"mapping_result" gorm:"type:jsonb"`
 	SavedPath     string    `json:"saved_path" gorm:"type:varchar(500)"`
+	JobID         string    `json:"job_id" gorm:"type:varchar(64)"`
 }
 
 func (FileUpload) TableName() string {
@@ -63,6 +64,7 @@ func (ValidationLog) TableName() string { return "tbValidationLog" }
 type UploadResponse struct {
 	File    FileUpload         `json:"file"`
 	Mapping *MLProcessResponse `json:"mapping,omitempty"`
+	JobID   string             `json:"job_id,omitempty"`
 }
 
 type ErrorResponse struct {
@@ -107,3 +109,27 @@ type ParsedFile struct {
 	Rows    []ParsedRow
 }
 
+// ========== Job Progress (SSE) ==========
+
+// JobProgress tracks the real-time state of an ML pipeline job.
+type JobProgress struct {
+	JobID     string                 `json:"job_id"`
+	Stage     string                 `json:"stage"` // extract|inspect|classify|map|done|error
+	Message   string                 `json:"message"`
+	Percent   int                    `json:"percent"` // 0-100
+	Timestamp int64                  `json:"timestamp"`
+	Data      map[string]interface{} `json:"data,omitempty"` // stage-specific detail
+}
+
+// JobState persists job progress in the DB so users can check status later.
+type JobState struct {
+	JobID     string    `json:"job_id" gorm:"primaryKey;type:varchar(64)"`
+	FileID    int64     `json:"file_id"`
+	Stage     string    `json:"stage" gorm:"type:varchar(20)"`
+	Message   string    `json:"message" gorm:"type:text"`
+	Percent   int       `json:"percent"`
+	Data      string    `json:"data" gorm:"type:jsonb"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"default:now()"`
+}
+
+func (JobState) TableName() string { return "tbJobState" }
