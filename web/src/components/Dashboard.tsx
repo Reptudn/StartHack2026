@@ -13,6 +13,10 @@ import {
   Card,
   CardBody,
   CardHeader,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
 } from "@heroui/react"
 import {
   Activity,
@@ -23,6 +27,7 @@ import {
   Clock,
   RefreshCw,
   AlertCircle,
+  Brain,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -52,7 +57,7 @@ export default function Dashboard() {
   const [isUploading, setIsUploading] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
-  const [mappingFileId, setMappingFileId] = useState<string | null>(null)
+  const [importingFileId, setImportingFileId] = useState<string | null>(null)
   const [uploadStep, setUploadStep] = useState<ProcessingStep>(null)
   const [fileProgress, setFileProgress] = useState<FileProgressMap>({})
   const [reprocessing, setReprocessing] = useState<Set<number>>(new Set())
@@ -79,6 +84,8 @@ export default function Dashboard() {
         },
         () => {
           activeSubscriptions.current.delete(fileId)
+          setFileProgress((prev) => ({ ...prev, [fileId]: prev[fileId] }))
+          loadFiles()
         },
       )
       activeSubscriptions.current.set(fileId, unsub)
@@ -147,6 +154,15 @@ export default function Dashboard() {
       })
     }
   }
+
+  const handleImportSuccess = useCallback(() => {
+    setImportingFileId(null)
+    loadFiles()
+  }, [loadFiles])
+
+  const handleOpenMappingModal = useCallback((fileId: string) => {
+    setImportingFileId(fileId)
+  }, [])
 
   const handleFilesUploaded = useCallback(
     async (newFiles: File[]) => {
@@ -455,13 +471,13 @@ export default function Dashboard() {
                           : "error",
                     errorCount: r.file.status === "failed" || r.file.status === "error" ? 1 : 0,
                     completeness: 100,
-                    columnsMapped: [],
+                    columnsMapped: r.mapping ? r.mapping.column_mappings.slice(0, 3).map(cm => cm.db_column) : [],
                     errors: [],
                   }))}
                   onFixClick={(id) => setSelectedFileId(id)}
                   selectedFileId={selectedFileId}
-                  onRowClick={(id) => setMappingFileId(id)}
-                  activeRowId={mappingFileId}
+                  onRowClick={handleOpenMappingModal}
+                  activeRowId={importingFileId}
                 />
 
                 {results.filter((r) => r.file.status === "error" || r.file.status === "failed").length > 0 && (
@@ -504,17 +520,55 @@ export default function Dashboard() {
                   </Card>
                 )}
 
-                {mappingFileId && results.find((r) => r.file.id.toString() === mappingFileId)?.mapping && (
-                  <MappingResult
-                    mapping={results.find((r) => r.file.id.toString() === mappingFileId)!.mapping!}
-                    files={results.map((r) => ({ id: r.file.id.toString(), name: r.file.filename }))}
-                    selectedFileId={mappingFileId}
-                    onFileSelect={(id) => setMappingFileId(id)}
-                  />
-                )}
               </div>
             )}
           </div>
+
+          {/* Mapping Editor Modal */}
+          <Modal
+            isOpen={importingFileId !== null}
+            onClose={() => setImportingFileId(null)}
+            size="5xl"
+            scrollBehavior="inside"
+            backdrop="blur"
+            classNames={{
+              base: "bg-card border border-border max-h-[90vh]",
+              header: "border-b border-border",
+              body: "p-0",
+              closeButton: "text-foreground hover:bg-muted",
+            }}
+          >
+            <ModalContent>
+              {() => (
+                <>
+                  <ModalHeader className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Brain className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold">
+                        Review Mapping: {importingFileId ? results.find((r) => r.file.id.toString() === importingFileId)?.file.filename : ""}
+                      </p>
+                      <p className="text-sm text-muted-foreground font-normal">
+                        Edit column mappings and approve to import data
+                      </p>
+                    </div>
+                  </ModalHeader>
+                  <ModalBody>
+                    {importingFileId && results.find((r) => r.file.id.toString() === importingFileId)?.mapping && (
+                      <MappingResult
+                        mapping={results.find((r) => r.file.id.toString() === importingFileId)!.mapping!}
+                        files={results.map((r) => ({ id: r.file.id.toString(), name: r.file.filename }))}
+                        selectedFileId={importingFileId}
+                        onFileSelect={handleOpenMappingModal}
+                        onImportSuccess={handleImportSuccess}
+                      />
+                    )}
+                  </ModalBody>
+                </>
+              )}
+            </ModalContent>
+          </Modal>
         </main>
       </div>
     </div>

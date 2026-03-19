@@ -13,7 +13,7 @@ import {
   TableRow,
   TableCell,
 } from "@heroui/react"
-import { Wrench, ChevronDown, ChevronUp, BarChart3, FileText } from "lucide-react"
+import { Wrench, ChevronDown, ChevronUp, BarChart3, FileText, Eye } from "lucide-react"
 import type { UploadedFile } from "./FileUpload"
 import { cn } from "@/lib/utils"
 
@@ -170,25 +170,47 @@ export function DataQualityTable({ files, onFixClick, selectedFileId, onRowClick
                     </Chip>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant={file.errorCount > 0 ? "solid" : "bordered"}
-                      color={file.errorCount > 0 ? "primary" : "default"}
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onFixClick(file.id);
-                      }}
-                      disabled={file.errorCount === 0}
-                      className={cn(
-                        "font-semibold gap-2",
-                        file.errorCount === 0 && "opacity-50",
-                        file.errorCount > 0 && selectedFileId !== file.id && "shadow-md hover:shadow-lg"
-                      )}
-                      startContent={<Wrench className="h-3.5 w-3.5" />}
-                      endContent={selectedFileId === file.id ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                    >
-                      {selectedFileId === file.id ? "Close" : "Fix"}
-                    </Button>
+                    {file.errorCount > 0 ? (
+                      <Button
+                        variant="solid"
+                        color="primary"
+                        size="sm"
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          onFixClick(file.id);
+                        }}
+                        className="font-semibold gap-2 shadow-md hover:shadow-lg"
+                        startContent={<Wrench className="h-3.5 w-3.5" />}
+                        endContent={selectedFileId === file.id ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      >
+                        {selectedFileId === file.id ? "Close" : "Fix"}
+                      </Button>
+                    ) : file.status === "valid" ? (
+                      <Button
+                        variant="bordered"
+                        color="primary"
+                        size="sm"
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          onRowClick?.(file.id);
+                        }}
+                        className="font-semibold gap-2"
+                        startContent={<Eye className="h-3.5 w-3.5" />}
+                      >
+                        Review
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="bordered"
+                        color="default"
+                        size="sm"
+                        disabled
+                        className="font-semibold gap-2 opacity-50"
+                        startContent={<Eye className="h-3.5 w-3.5" />}
+                      >
+                        Review
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

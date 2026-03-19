@@ -25,6 +25,7 @@ services:
         condition: service_started
     volumes:
       - uploads:/data/uploads
+      - ./db:/app/db:ro  # schema.sql needed by mapping diagnostics
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health"]
       interval: 10s

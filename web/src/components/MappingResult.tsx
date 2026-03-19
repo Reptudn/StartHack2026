@@ -46,6 +46,7 @@ interface MappingResultProps {
   files: FileOption[]
   selectedFileId: string | null
   onFileSelect: (fileId: string) => void
+  onImportSuccess?: () => void
 }
 
 function getConfidenceChip(confidence: ColumnMapping["confidence"]) {
@@ -63,7 +64,7 @@ function getConfidenceChip(confidence: ColumnMapping["confidence"]) {
   )
 }
 
-export function MappingResult({ mapping, files, selectedFileId, onFileSelect }: MappingResultProps) {
+export function MappingResult({ mapping, files, selectedFileId, onFileSelect, onImportSuccess }: MappingResultProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedMapping, setEditedMapping] = useState<MLMapping>(mapping)
   const [isImporting, setIsImporting] = useState(false)
@@ -121,6 +122,7 @@ export function MappingResult({ mapping, files, selectedFileId, onFileSelect }: 
       setImportStatus("success")
       setImportMessage(`Successfully imported ${res.rows_inserted} rows!`)
       setIsEditing(false)
+      onImportSuccess?.()
     } catch (err) {
       setImportStatus("error")
       setImportMessage(err instanceof Error ? err.message : "Unknown error")
