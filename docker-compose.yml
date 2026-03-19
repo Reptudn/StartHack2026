@@ -15,7 +15,7 @@ services:
       DB_NAME: ${DB_NAME:-healthmap}
       DB_SSLMODE: ${DB_SSLMODE:-disable}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4242}
-      UPLOAD_DIR: ./uploads
+      UPLOAD_DIR: /data/uploads
       MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-50}
       ML_SERVICE_URL: http://ml:5001
     depends_on:
