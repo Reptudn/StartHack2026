@@ -1,14 +1,16 @@
 """
-ML Service — Maps uploaded file columns to the DB schema using Ollama.
+ML Service — 4-stage pipeline: Extract → Inspect → Classify → Map
 """
-
-import json
 import os
-import re
 import httpx
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+
+from pipeline.schema import ProcessResponse, MLColumnMapping
+from pipeline.extract import extract
+from pipeline.inspect import inspect
+from pipeline.agents import classify, map_columns, KNOWN_TABLES
+from pipeline import cache
 
 app = FastAPI(title="HealthMap ML Service")
 
@@ -20,46 +22,10 @@ app.add_middleware(
 )
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3.5:0.8b")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
+GO_API_URL = os.getenv("GO_API_URL", "http://api:8080")
 
-# The DB schema embedded as a compact reference for the LLM
-DB_SCHEMA = """
-Tables and their columns:
-
-1. tbCaseData: coId, coE2I222, coPatientId, coE2I223, coE2I228, coLastname, coFirstname, coGender, coDateOfBirth, coAgeYears, coTypeOfStay, coIcd, coDrgName, coRecliningType, coState
-
-2. tbImportAcData: coId, coCaseId, coE0I001-coE0I083 (smallint assessment scores), coE2I001-coE2I232 (smallint/nvarchar clinical indicators), coE2I2000-coE2I2279 (smallint extended indicators), coMaxDekuGrad, coDekubitusWertTotal, coLastAssessment, coE3I0889, coCaseIdAlpha
-
-3. tbImportLabsData: coId, coCaseId, coSpecimen_datetime, coSodium_mmol_L, coSodium_flag, cosodium_ref_low, cosodium_ref_high, coPotassium_mmol_L, coPotassium_flag, coPotassium_ref_low, coPotassium_ref_high, coCreatinine_mg_dL, coCreatinine_flag, coCreatinine_ref_low, coCreatinine_ref_high, coEgfr_mL_min_1_73m2, coEgfr_flag, coEgfr_ref_low, coEgfr_ref_high, coGlucose_mg_dL, coGlucose_flag, coGlucose_ref_low, coGlucose_ref_high, coHemoglobin_g_dL, coHb_flag, coHb_ref_low, coHb_ref_high, coWbc_10e9_L, coWbc_flag, coWbc_ref_low, coWbc_ref_high, coPlatelets_10e9_L, coPlatelets_flag, coPlt_ref_low, coPlt_ref_high, coCrp_mg_L, coCrp_flag, coCrp_ref_low, coCrp_ref_high, coAlt_U_L, coAlt_flag, coAlt_ref_low, coAlt_ref_high, coAst_U_L, coAst_flag, coAst_ref_low, coAst_ref_high, coBilirubin_mg_dL, coBilirubin_flag, coBili_ref_low, coBili_ref_high, coAlbumin_g_dL, coAlbumin_flag, coAlbumin_ref_low, coAlbumin_ref_high, coInr, coInr_flag, coInr_ref_low, coInr_ref_high, coLactate_mmol_L, coLactate_flag, coLactate_ref_low, coLactate_ref_high
-
-4. tbImportIcd10Data: coId, coCaseId, coWard, coAdmission_date, coDischarge_date, coLength_of_stay_days, coPrimary_icd10_code, coPrimary_icd10_description_en, coSecondary_icd10_codes, cpSecondary_icd10_descriptions_en, coOps_codes, ops_descriptions_en
-
-5. tbImportDeviceMotionData: coId, coCaseId, coTimestamp, coPatient_id, coMovement_index_0_100, coMicro_movements_count, coBed_exit_detected_0_1, coFall_event_0_1, coImpact_magnitude_g, coPost_fall_immobility_minutes
-
-6. tbImportDevice1HzMotionData: coId, coCaseId, coTimestamp, coPatient_id, coDevice_id, coBed_occupied_0_1, coMovement_score_0_100, coAccel_x_m_s2, coAccel_y_m_s2, coAccel_z_m_s2, coAccel_magnitude_g, coPressure_zone1_0_100, coPressure_zone2_0_100, coPressure_zone3_0_100, coPressure_zone4_0_100, coBed_exit_event_0_1, coBed_return_event_0_1, coFall_event_0_1, coImpact_magnitude_g, coEvent_id
-
-7. tbImportMedicationInpatientData: coId, coCaseId, coPatient_id, coRecord_type, coEncounter_id, coWard, coAdmission_datetime, coDischarge_datetime, coOrder_id, coOrder_uuid, coMedication_code_atc, coMedication_name, coRoute, coDose, coDose_unit, coFrequency, coOrder_start_datetime, coOrder_stop_datetime, coIs_prn_0_1, coIndication, prescriber_role, order_status, administration_datetime, administered_dose, administered_unit, administration_status, note
-
-8. tbImportNursingDailyReportsData: coId, coCaseId, coPatient_id, coWard, coReport_date, coShift, coNursing_note_free_text
-"""
-
-
-class MappingRequest(BaseModel):
-    headers: list[str]
-    sample_rows: list[list[str]]
-    filename: str
-
-
-class ColumnMapping(BaseModel):
-    file_column: str
-    db_column: str
-    confidence: str  # "high", "medium", "low"
-
-
-class MappingResponse(BaseModel):
-    target_table: str
-    column_mappings: list[ColumnMapping]
-    unmapped_columns: list[str]
+CONFIDENCE_THRESHOLD = 0.8
 
 
 @app.get("/health")
@@ -67,95 +33,94 @@ async def health():
     return {"status": "ok", "model": OLLAMA_MODEL}
 
 
-@app.post("/api/map", response_model=MappingResponse)
-async def map_columns(req: MappingRequest):
-    """Ask Ollama to map file columns to DB schema."""
+@app.post("/api/process", response_model=ProcessResponse)
+async def process_file(file: UploadFile = File(...)):
+    """Run the 4-stage pipeline on an uploaded file."""
+    filename = file.filename or "unknown"
+    file_bytes = await file.read()
 
-    # Build sample data preview
-    sample_preview = "Headers: " + ", ".join(req.headers) + "\n"
-    for i, row in enumerate(req.sample_rows[:3]):
-        sample_preview += f"Row {i+1}: " + ", ".join(row) + "\n"
-
-    prompt = f"""/no_think
-You are a data mapping assistant. Given a file's column headers and sample data, determine which database table the data belongs to and map each file column to the correct database column.
-
-DATABASE SCHEMA:
-{DB_SCHEMA}
-
-UPLOADED FILE: "{req.filename}"
-{sample_preview}
-
-INSTRUCTIONS:
-1. Identify which ONE table this file's data maps to best.
-2. For each file column, find the best matching database column in that table.
-3. If a file column has no match, list it as unmapped.
-
-Respond with ONLY valid JSON (no markdown, no explanation):
-{{
-  "target_table": "tableName",
-  "column_mappings": [
-    {{"file_column": "col_from_file", "db_column": "col_from_db", "confidence": "high"}},
-    ...
-  ],
-  "unmapped_columns": ["col1", "col2"]
-}}
-"""
-
-    try:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            resp = await client.post(
-                f"{OLLAMA_URL}/api/generate",
-                json={
-                    "model": OLLAMA_MODEL,
-                    "prompt": prompt,
-                    "stream": False,
-                    "options": {"temperature": 0.1, "num_predict": 2048},
-                },
-            )
-            resp.raise_for_status()
-            result = resp.json()
-            raw_text = result.get("response", "")
-
-            # Parse the JSON from the LLM response
-            mapping = _parse_llm_json(raw_text, req.headers)
-            return mapping
-
-    except httpx.HTTPStatusError as e:
-        # Ollama not ready or model not loaded — return a fallback
-        return _fallback_mapping(req.headers, f"Ollama error: {e.response.status_code}")
-    except Exception as e:
-        return _fallback_mapping(req.headers, str(e))
-
-
-def _parse_llm_json(raw: str, headers: list[str]) -> MappingResponse:
-    """Try to extract valid JSON from the LLM output."""
-    # Try to find JSON in the response
-    raw = raw.strip()
-
-    # Remove markdown code fences if present
-    if raw.startswith("```"):
-        raw = re.sub(r"^```(?:json)?\s*", "", raw)
-        raw = re.sub(r"\s*```$", "", raw)
-
-    try:
-        data = json.loads(raw)
-        return MappingResponse(
-            target_table=data.get("target_table", "unknown"),
-            column_mappings=[
-                ColumnMapping(**cm) for cm in data.get("column_mappings", [])
-            ],
-            unmapped_columns=data.get("unmapped_columns", []),
+    # ── Stage 1: Extract ────────────────────────────────────────────────────
+    df, meta = extract(file_bytes, filename)
+    if df is None:
+        return ProcessResponse(
+            target_table="UNKNOWN", confidence=0.0, reasoning="Extraction failed",
+            column_mappings=[], unmapped_columns=[], row_count=0,
+            low_confidence=True, cache_hit=False,
         )
-    except (json.JSONDecodeError, Exception):
-        return _fallback_mapping(headers, "Failed to parse LLM response")
 
+    # ── Stage 2: Inspect ────────────────────────────────────────────────────
+    profile = inspect(df, meta)
 
-def _fallback_mapping(headers: list[str], error: str) -> MappingResponse:
-    """Return a best-effort fallback when the LLM fails."""
-    return MappingResponse(
-        target_table=f"unknown (error: {error})",
-        column_mappings=[],
-        unmapped_columns=headers,
+    col_names = [c.name for c in profile.columns]
+
+    # ── Stage 3: Classify (Agent 1) — cache check first ────────────────────
+    classifier_key = cache.make_classifier_key(col_names)
+    cached = cache.get(classifier_key)
+    classify_cache_hit = cached is not None
+
+    if cached:
+        target_table = cached["target_table"]
+        confidence = cached["confidence"]
+        reasoning = cached.get("reasoning", "")
+    else:
+        result = await classify(profile, OLLAMA_URL, OLLAMA_MODEL)
+        target_table = result.target_table
+        confidence = result.confidence
+        reasoning = result.reasoning
+        await cache.write_through(
+            classifier_key,
+            {"target_table": target_table, "confidence": confidence, "reasoning": reasoning},
+            GO_API_URL,
+        )
+
+    low_confidence = confidence < CONFIDENCE_THRESHOLD or target_table not in KNOWN_TABLES
+    if low_confidence:
+        return ProcessResponse(
+            target_table=target_table, confidence=confidence, reasoning=reasoning,
+            column_mappings=[], unmapped_columns=[c.name for c in profile.columns],
+            row_count=meta["row_count"], low_confidence=True,
+            cache_hit=classify_cache_hit,
+        )
+
+    # ── Stage 4: Map (Agent 2) — cache check first ─────────────────────────
+    mapper_key = cache.make_mapper_key(col_names, target_table)
+    cached_map = cache.get(mapper_key)
+    map_cache_hit = cached_map is not None
+
+    if cached_map:
+        mappings = cached_map.get("mappings", {})
+        unmapped = cached_map.get("unmapped_columns", [])
+        map_confidence = cached_map.get("confidence", 0.0)
+    else:
+        map_result = await map_columns(profile, target_table, OLLAMA_URL, OLLAMA_MODEL)
+        mappings = map_result.mappings
+        unmapped = map_result.unmapped_columns
+        map_confidence = map_result.confidence
+        await cache.write_through(
+            mapper_key,
+            {"target_table": target_table, "mappings": mappings,
+             "unmapped_columns": unmapped, "confidence": map_confidence},
+            GO_API_URL,
+        )
+
+    column_mappings = [
+        MLColumnMapping(
+            file_column=src,
+            db_column=dst,
+            confidence="high" if map_confidence >= 0.8 else "medium" if map_confidence >= 0.5 else "low",
+        )
+        for src, dst in mappings.items()
+    ]
+
+    return ProcessResponse(
+        target_table=target_table,
+        confidence=confidence,
+        reasoning=reasoning,
+        column_mappings=column_mappings,
+        unmapped_columns=unmapped,
+        row_count=meta["row_count"],
+        low_confidence=False,
+        cache_hit=classify_cache_hit or map_cache_hit,
     )
 
 
