@@ -101,3 +101,9 @@ func DetectFileType(filename string) string {
 		return "unknown"
 	}
 }
+
+// IsDirectlyParseable returns true for formats Go's CSV parser handles.
+// XLSX and PDF are forwarded to the ML service for extraction.
+func IsDirectlyParseable(fileType string) bool {
+	return fileType == "csv" || fileType == "tsv" || fileType == "txt"
+}

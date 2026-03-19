@@ -18,7 +18,7 @@ import (
 func Import(c *gin.Context) {
 	fileID := c.Param("id")
 
-	var mapping models.MLMapping
+	var mapping models.MLProcessResponse
 	if err := c.ShouldBindJSON(&mapping); err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid mapping JSON format"})
 		return

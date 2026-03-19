@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -84,81 +85,44 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 			return
 		}
 
-		// Parse headers + sample rows
-		var parsed *models.ParsedFile
-		if fileType == "csv" || fileType == "tsv" || fileType == "txt" {
-			f, err := os.Open(savedPath)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to read saved file"})
-				return
-			}
-			defer f.Close()
-
-			parsed, err = parser.ParseCSV(f)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Failed to parse file: " + err.Error()})
-				return
-			}
-		} else {
-			parsed = &models.ParsedFile{
-				Headers: []string{"raw_content"},
-				Rows:    []models.ParsedRow{},
-			}
-		}
-
-		sample20 := c.PostForm("sample20") == "true"
-		
-		limit := len(parsed.Rows)
-		if sample20 {
-			limit = len(parsed.Rows) / 5
-			if limit < 3 && len(parsed.Rows) >= 3 {
-				limit = 3 // Give at least 3 rows to be useful
-			} else if len(parsed.Rows) < 3 {
-				limit = len(parsed.Rows)
-			}
-		}
-
-		// Build sample rows for ML service
-		sampleRows := make([][]string, 0, limit)
-		for i, row := range parsed.Rows {
-			if i >= limit {
-				break
-			}
-			rowValues := make([]string, len(parsed.Headers))
-			for j, h := range parsed.Headers {
-				rowValues[j] = row.Fields[h]
-			}
-			sampleRows = append(sampleRows, rowValues)
-		}
-
-		var mapping *models.MLMapping
+		// Send raw file to ML service /api/process
+		// savedPath is the on-disk path set above
+		var mapping *models.MLProcessResponse
 		mappingJSON := "{}"
 		status := "error"
+		rowCount := 0
 
-		mlReq := models.MLMappingRequest{
-			Headers:    parsed.Headers,
-			SampleRows: sampleRows,
-			Filename:   fileHeader.Filename,
+		mlReqBody := &bytes.Buffer{}
+		writer := multipart.NewWriter(mlReqBody)
+		part, partErr := writer.CreateFormFile("file", fileHeader.Filename)
+		if partErr == nil {
+			mlFile, err2 := os.Open(savedPath)
+			if err2 == nil {
+				io.Copy(part, mlFile)
+				mlFile.Close()
+			}
 		}
+		writer.Close()
 
-		mlBody, _ := json.Marshal(mlReq)
 		resp, err := http.Post(
-			h.Config.MLServiceURL+"/api/map",
-			"application/json",
-			bytes.NewReader(mlBody),
+			h.Config.MLServiceURL+"/api/process",
+			writer.FormDataContentType(),
+			mlReqBody,
 		)
 		if err != nil {
 			log.Printf("[upload] ML service call failed: %v", err)
 		} else {
 			defer resp.Body.Close()
 			body, _ := io.ReadAll(resp.Body)
-			var mlResp models.MLMapping
+			var mlResp models.MLProcessResponse
 			if err := json.Unmarshal(body, &mlResp); err == nil {
 				mapping = &mlResp
 				mappingJSON = string(body)
-				if mlResp.TargetTable == "unknown" || mlResp.TargetTable == "" {
-					status = "error"
-				} else {
+				rowCount = mlResp.RowCount
+				switch {
+				case mlResp.LowConfidence || mlResp.TargetTable == "UNKNOWN" || mlResp.TargetTable == "":
+					status = "review"
+				default:
 					status = "mapped"
 				}
 			} else {
@@ -171,7 +135,7 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 			FileType:      fileType,
 			FileSizeBytes: fileHeader.Size,
 			Status:        status,
-			RowCount:      len(parsed.Rows),
+			RowCount:      rowCount,
 			MappingResult: mappingJSON,
 			SavedPath:     savedPath,
 		}
@@ -187,8 +151,7 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 			Mapping: mapping,
 		})
 
-		log.Printf("[upload] Processed %s: status=%s rows=%d sample20=%v",
-			fileHeader.Filename, status, len(parsed.Rows), sample20)
+		log.Printf("[upload] Processed %s: status=%s rows=%d", fileHeader.Filename, status, rowCount)
 	}
 
 	c.JSON(http.StatusOK, results)

@@ -107,11 +107,3 @@ type ParsedFile struct {
 	Rows    []ParsedRow
 }
 
-// Temporary aliases — remove when upload.go and import.go are updated in Task 9
-type MLMapping = MLProcessResponse
-
-type MLMappingRequest struct {
-	Headers    []string   `json:"headers"`
-	SampleRows [][]string `json:"sample_rows"`
-	Filename   string     `json:"filename"`
-}
