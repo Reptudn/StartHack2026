@@ -10,8 +10,13 @@ export interface ColumnMapping {
 
 export interface MLMapping {
   target_table: string
+  confidence: number
+  reasoning: string
   column_mappings: ColumnMapping[]
   unmapped_columns: string[]
+  row_count: number
+  low_confidence: boolean
+  cache_hit: boolean
 }
 
 export interface ApiFile {
@@ -22,8 +27,8 @@ export interface ApiFile {
   uploaded_at: string
   status: string
   row_count: number
-  columns_mapped: string[]
   mapping_result: string
+  saved_path?: string
 }
 
 export interface ApiUploadResponse {

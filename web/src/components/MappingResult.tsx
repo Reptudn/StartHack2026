@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import type { MLMapping, SchemaTable } from '../api'
 import { getSchema, importFile } from '../api'
+import { BrainCircuit, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
 
 interface MappingResultProps {
   mapping: MLMapping
@@ -64,10 +65,12 @@ export default function MappingResult({ mapping, filename, fileId }: MappingResu
     <div className="mapping-result">
       <div className="mapping-header" style={{ alignItems: 'flex-start' }}>
         <div className="mapping-title">
-          <span className="mapping-icon">🧠</span>
+          <div className="mapping-icon-bg" style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '0.5rem', borderRadius: '8px', display: 'flex' }}>
+            <BrainCircuit size={20} color="#8b5cf6" />
+          </div>
           <div>
-            <h3>AI Mapping Result</h3>
-            <p className="mapping-filename">{filename}</p>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#e5e5e5' }}>AI Mapping Result</h3>
+            <p className="mapping-filename" style={{ color: '#a1a1aa' }}>{filename}</p>
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
@@ -168,10 +171,13 @@ export default function MappingResult({ mapping, filename, fileId }: MappingResu
 
       {totalUnmapped > 0 && (
         <div className="unmapped-section">
-          <h4>⚠️ Unmapped Columns {isEditing && <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>(Cannot be edited currently)</span>}</h4>
+          <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#e5e5e5' }}>
+            <AlertTriangle size={16} color="#f97316" /> Unmapped Columns 
+            {isEditing && <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: '#a1a1aa' }}>(Cannot be edited currently)</span>}
+          </h4>
           <div className="unmapped-chips">
             {editedMapping.unmapped_columns.map((col, i) => (
-              <span key={i} className="unmapped-chip">{col}</span>
+              <span key={i} className="unmapped-chip" style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.8rem', color: '#a1a1aa' }}>{col}</span>
             ))}
           </div>
         </div>
@@ -179,8 +185,8 @@ export default function MappingResult({ mapping, filename, fileId }: MappingResu
 
       <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {importMessage && (
-          <div style={{ padding: '0.75rem', borderRadius: '6px', background: importStatus === 'success' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)', color: importStatus === 'success' ? '#4caf50' : '#f44336' }}>
-            {importStatus === 'success' ? '✅ ' : '❌ '} {importMessage}
+          <div style={{ padding: '0.75rem', borderRadius: '6px', background: importStatus === 'success' ? 'rgba(45, 212, 191, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: importStatus === 'success' ? '#2dd4bf' : '#ef4444', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+            {importStatus === 'success' ? <CheckCircle size={16} /> : <XCircle size={16} />} {importMessage}
           </div>
         )}
         
@@ -190,19 +196,22 @@ export default function MappingResult({ mapping, filename, fileId }: MappingResu
             disabled={isImporting}
             style={{
               padding: '0.75rem 1.5rem',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
-              color: 'white',
+              background: 'linear-gradient(135deg, #38bdf8, #2dd4bf)',
+              color: '#000',
               border: 'none',
               borderRadius: '8px',
               cursor: isImporting ? 'wait' : 'pointer',
-              fontWeight: 600,
+              fontWeight: 700,
               fontSize: '1rem',
               alignSelf: 'flex-end',
               opacity: isImporting ? 0.7 : 1,
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
             }}
           >
-            {isImporting ? 'Importing Data...' : '✅ Approve & Import Data'}
+            {isImporting ? 'Importing Data...' : <><CheckCircle size={18} /> Approve & Import Data</>}
           </button>
         )}
       </div>
