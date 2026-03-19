@@ -126,7 +126,7 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 		jobID := uuid.New().String()
 
 		// Create file record in DB immediately with "processing" status
-		fileUpload := models.FileUpload{
+		fileUpload = models.FileUpload{
 			Filename:      fileHeader.Filename,
 			FileType:      fileType,
 			FileSizeBytes: fileHeader.Size,

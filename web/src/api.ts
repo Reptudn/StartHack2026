@@ -62,6 +62,23 @@ export interface ValidationResponse {
   errors: ValidationError[]
 }
 
+export interface MappingDiagnosticError {
+  type: string
+  severity: 'error' | 'warning' | 'info'
+  message: string
+  file_column?: string
+  db_column?: string
+  target_table?: string
+}
+
+export interface MappingDiagnosticsResponse {
+  file: ApiFile
+  file_columns: string[]
+  target_table: string
+  column_mappings: ColumnMapping[]
+  errors: MappingDiagnosticError[]
+}
+
 export interface ApiUploadResponse {
   file: ApiFile
   mapping?: MLMapping
@@ -174,6 +191,12 @@ export async function deleteFile(fileId: number): Promise<void> {
 export async function getFileValidation(fileId: number): Promise<ValidationResponse> {
   const res = await fetch(`${API_URL}/api/files/${fileId}/validation`)
   if (!res.ok) throw new Error('Failed to fetch validation data')
+  return res.json()
+}
+
+export async function getMappingDiagnostics(fileId: number): Promise<MappingDiagnosticsResponse> {
+  const res = await fetch(`${API_URL}/api/files/${fileId}/mapping-diagnostics`)
+  if (!res.ok) throw new Error('Failed to fetch mapping diagnostics')
   return res.json()
 }
 

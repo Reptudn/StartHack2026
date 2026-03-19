@@ -16,10 +16,10 @@ import {
   Select,
   SelectItem
 } from "@heroui/react"
-import { Brain, ArrowRight, Check, Pencil, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
+import { Brain, ArrowRight, Check, Pencil, CheckCircle, AlertCircle, Loader2, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getSchema, importFile } from '../api'
-import type { MLMapping, SchemaTable } from '../api'
+import { getSchema, importFile, getMappingDiagnostics } from '../api'
+import type { MLMapping, SchemaTable, MappingDiagnosticsResponse, MappingDiagnosticError } from '../api'
 
 interface ColumnMapping {
   file_column: string
@@ -66,6 +66,9 @@ export function MappingResult({
   const [importStatus, setImportStatus] = useState<"idle" | "success" | "error">("idle")
   const [importMessage, setImportMessage] = useState("")
   const [schemas, setSchemas] = useState<SchemaTable[]>([])
+  const [diagnostics, setDiagnostics] = useState<MappingDiagnosticsResponse | null>(null)
+  const [diagnosticsLoading, setDiagnosticsLoading] = useState(false)
+  const [diagnosticsError, setDiagnosticsError] = useState<string | null>(null)
 
   // Load schemas on mount
   useEffect(() => {
@@ -76,6 +79,16 @@ export function MappingResult({
   useEffect(() => {
     setEditedMapping(mapping)
   }, [mapping])
+
+  useEffect(() => {
+    if (!selectedFileId) return
+    setDiagnosticsLoading(true)
+    setDiagnosticsError(null)
+    getMappingDiagnostics(parseInt(selectedFileId))
+      .then(setDiagnostics)
+      .catch((err) => setDiagnosticsError(err instanceof Error ? err.message : "Failed to load diagnostics"))
+      .finally(() => setDiagnosticsLoading(false))
+  }, [selectedFileId])
 
   const highCount = editedMapping.column_mappings.filter(
     (m) => m.confidence === "high" || m.confidence === "manual"
@@ -117,6 +130,10 @@ export function MappingResult({
   }
 
   const currentSchema = schemas.find((s) => s.name === editedMapping.target_table)
+  const sortedFileColumns = diagnostics?.file_columns ? [...diagnostics.file_columns].sort() : []
+  const mappingErrors = diagnostics?.errors || []
+  const errorCount = mappingErrors.filter((e) => e.severity === "error").length
+  const warningCount = mappingErrors.filter((e) => e.severity === "warning").length
 
   // Check if mapping failed
   const isMappingFailed = !editedMapping.target_table || 
@@ -326,6 +343,110 @@ export function MappingResult({
             </div>
           </div>
         )}
+
+        {/* File Columns & Mapping Diagnostics */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border border-border bg-card">
+            <CardHeader className="pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <p className="font-semibold">File Columns</p>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              {diagnosticsLoading ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading columns...
+                </div>
+              ) : diagnosticsError ? (
+                <div className="text-destructive text-sm font-medium">{diagnosticsError}</div>
+              ) : sortedFileColumns.length === 0 ? (
+                <div className="text-muted-foreground text-sm">No columns found.</div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {sortedFileColumns.map((col) => (
+                    <Chip key={col} variant="flat" size="sm" className="bg-muted/50 text-foreground font-medium">
+                      {col}
+                    </Chip>
+                  ))}
+                </div>
+              )}
+            </CardBody>
+          </Card>
+
+          <Card className="border border-border bg-card">
+            <CardHeader className="pb-3 border-b border-border">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-chart-3" />
+                  <p className="font-semibold">Mapping Diagnostics</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {errorCount > 0 && (
+                    <Chip size="sm" variant="flat" className="bg-destructive/10 text-destructive font-semibold">
+                      {errorCount} errors
+                    </Chip>
+                  )}
+                  {warningCount > 0 && (
+                    <Chip size="sm" variant="flat" className="bg-chart-3/10 text-chart-3 font-semibold">
+                      {warningCount} warnings
+                    </Chip>
+                  )}
+                  {errorCount === 0 && warningCount === 0 && (
+                    <Chip size="sm" variant="flat" className="bg-primary/10 text-primary font-semibold">
+                      Clean
+                    </Chip>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              {diagnosticsLoading ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading diagnostics...
+                </div>
+              ) : diagnosticsError ? (
+                <div className="text-destructive text-sm font-medium">{diagnosticsError}</div>
+              ) : mappingErrors.length === 0 ? (
+                <div className="text-muted-foreground text-sm">No mapping issues detected.</div>
+              ) : (
+                <div className="space-y-2">
+                  {mappingErrors.map((err: MappingDiagnosticError, idx) => (
+                    <div
+                      key={`${err.type}-${idx}`}
+                      className={cn(
+                        "flex items-start gap-3 p-3 rounded-lg border",
+                        err.severity === "error"
+                          ? "border-destructive/20 bg-destructive/5 text-destructive"
+                          : err.severity === "warning"
+                          ? "border-chart-3/20 bg-chart-3/5 text-chart-3"
+                          : "border-primary/20 bg-primary/5 text-primary"
+                      )}
+                    >
+                      <div className="mt-0.5">
+                        {err.severity === "error" ? (
+                          <AlertCircle className="h-4 w-4" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold">{err.message}</p>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {err.file_column && <span>File: <code>{err.file_column}</code> </span>}
+                          {err.db_column && <span>DB: <code>{err.db_column}</code> </span>}
+                          {err.target_table && <span>Table: <code>{err.target_table}</code></span>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardBody>
+          </Card>
+        </div>
 
         {/* Import Status & Button */}
         <div className="pt-4 border-t border-border space-y-4">
