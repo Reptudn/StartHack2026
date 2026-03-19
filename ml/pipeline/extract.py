@@ -1,5 +1,6 @@
 """Stage 1: Extract raw file bytes into a pandas DataFrame + metadata dict."""
 import io
+import logging
 from typing import Optional
 import pandas as pd
 
@@ -23,6 +24,7 @@ def extract(file_bytes: bytes, filename: str) -> tuple[Optional[pd.DataFrame], d
         if fmt in ("csv", "tsv", "txt"):
             df = _read_delimited(file_bytes, fmt)
         elif fmt in ("xlsx", "xls"):
+            # openpyxl handles .xlsx only; .xls (legacy BIFF8) will fail gracefully
             df = pd.read_excel(io.BytesIO(file_bytes), engine="openpyxl")
         elif fmt == "pdf":
             df = _read_pdf(file_bytes)
@@ -45,7 +47,8 @@ def extract(file_bytes: bytes, filename: str) -> tuple[Optional[pd.DataFrame], d
         }
         return df, meta
 
-    except Exception:
+    except Exception as exc:
+        logging.getLogger(__name__).warning("extract failed for %s: %s", filename, exc)
         base_meta["format"] = "unknown"
         return None, base_meta
 
