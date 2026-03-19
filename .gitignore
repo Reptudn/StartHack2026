@@ -3,3 +3,4 @@
 .env
 .env.prod
 .env.dev
+.ruff_cache/
