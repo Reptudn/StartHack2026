@@ -337,42 +337,9 @@ async def process_file(
         for src, dst in mappings.items()
     ]
 
-    # ── Done ────────────────────────────────────────────────────────────────
-    mapped_count = len(column_mappings)
-    high_count = sum(1 for m in column_mappings if m.confidence == "high")
-    low_count = sum(1 for m in column_mappings if m.confidence == "low")
-    medium_count = mapped_count - high_count - low_count
-
-    mapping_details = [
-        {
-            "file_column": m.file_column,
-            "db_column": m.db_column,
-            "confidence": m.confidence,
-        }
-        for m in column_mappings
-    ]
-
-    await _report_progress(
-        job_id,
-        "done",
-        f"Mapping complete: {mapped_count} columns ({high_count} high, {medium_count} medium, {low_count} low confidence)",
-        100,
-        {
-            "target_table": target_table,
-            "confidence": round(confidence, 4),
-            "reasoning": reasoning,
-            "row_count": row_count,
-            "columns_mapped": mapped_count,
-            "columns_high_confidence": high_count,
-            "columns_medium_confidence": medium_count,
-            "columns_low_confidence": low_count,
-            "columns_unmapped": len(unmapped),
-            "unmapped_columns": unmapped,
-            "mapping_details": mapping_details,
-            "cache_hit": classify_cache_hit or map_cache_hit,
-            "model_used": OLLAMA_MODEL,
-        },
-    )
+    # NOTE: Do NOT report "done" here — the Go API reports "done" AFTER it
+    # has persisted the mapping result to the DB.  If we report "done" now,
+    # the frontend reloads before the DB is updated and sees stale data.
 
     return ProcessResponse(
         target_table=target_table,
@@ -383,6 +350,8 @@ async def process_file(
         row_count=meta["row_count"],
         low_confidence=False,
         cache_hit=classify_cache_hit or map_cache_hit,
+        profile=profile,
+        anomalies=profile.anomalies,
     )
 
 

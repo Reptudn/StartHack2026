@@ -26,9 +26,11 @@ export default function MappingResult({ mapping, filename, fileId }: MappingResu
     }
   }, [isEditing, schemas.length])
 
-  const highCount = editedMapping.column_mappings.filter(m => m.confidence === 'high').length
-  const totalMapped = editedMapping.column_mappings.length
-  const totalUnmapped = editedMapping.unmapped_columns.length
+  const columnMappings = editedMapping.column_mappings ?? []
+  const unmappedColumns = editedMapping.unmapped_columns ?? []
+  const highCount = columnMappings.filter(m => m.confidence === 'high').length
+  const totalMapped = columnMappings.length
+  const totalUnmapped = unmappedColumns.length
 
   const handleTableChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setEditedMapping(prev => ({ ...prev, target_table: e.target.value }))
@@ -37,7 +39,7 @@ export default function MappingResult({ mapping, filename, fileId }: MappingResu
   const handleColumnChange = (fileCol: string, newDbCol: string) => {
     setEditedMapping(prev => ({
       ...prev,
-      column_mappings: prev.column_mappings.map(cm => 
+      column_mappings: (prev.column_mappings ?? []).map(cm =>
         cm.file_column === fileCol ? { ...cm, db_column: newDbCol, confidence: 'manual' } : cm
       )
     }))
@@ -133,7 +135,7 @@ export default function MappingResult({ mapping, filename, fileId }: MappingResu
               </tr>
             </thead>
             <tbody>
-              {editedMapping.column_mappings.map((cm, i) => (
+              {columnMappings.map((cm, i) => (
                 <tr key={i}>
                   <td className="col-file">{cm.file_column}</td>
                   <td className="col-arrow">→</td>
@@ -176,7 +178,7 @@ export default function MappingResult({ mapping, filename, fileId }: MappingResu
             {isEditing && <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: '#a1a1aa' }}>(Cannot be edited currently)</span>}
           </h4>
           <div className="unmapped-chips">
-            {editedMapping.unmapped_columns.map((col, i) => (
+            {unmappedColumns.map((col, i) => (
               <span key={i} className="unmapped-chip" style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.8rem', color: '#a1a1aa' }}>{col}</span>
             ))}
           </div>
@@ -190,9 +192,9 @@ export default function MappingResult({ mapping, filename, fileId }: MappingResu
           </div>
         )}
         
-        {importStatus !== 'success' && (
-          <button 
-            onClick={handleApprove} 
+        {importStatus !== 'success' && totalMapped > 0 && (
+          <button
+            onClick={handleApprove}
             disabled={isImporting}
             style={{
               padding: '0.75rem 1.5rem',

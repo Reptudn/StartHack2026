@@ -47,8 +47,8 @@ function confidenceColor(level: 'high' | 'medium' | 'low'): string {
 function FileStages({ file, mapping, progress }: { file: ApiFile, mapping?: MLMapping, progress?: JobProgress }) {
   const stageOrder = ['extract', 'inspect', 'classify', 'map', 'done']
   const currentIdx = progress ? stageOrder.indexOf(progress.stage) : -1
-  const isMapped = mapping && !mapping.target_table.startsWith('unknown');
-  const isFailed = file.status === 'error' || (mapping && mapping.target_table.startsWith('unknown'));
+  const isMapped = mapping && !mapping.target_table.toLowerCase().startsWith('unknown');
+  const isFailed = file.status === 'error' || (mapping && mapping.target_table.toLowerCase().startsWith('unknown'));
   const isProcessing = file.status === 'processing'
   const isDone = file.status === 'mapped' || file.status === 'imported' || file.status === 'review'
 
@@ -322,7 +322,7 @@ export default function Dashboard() {
       const totalJobs = uploadResults.filter(r => r.job_id).length
 
       if (totalJobs === 0) {
-        const mappedCount = converted.filter(r => r.mapping && !r.mapping.target_table.startsWith('unknown')).length
+        const mappedCount = converted.filter(r => r.mapping && !r.mapping.target_table.toLowerCase().startsWith('unknown')).length
         if (mappedCount > 0) {
           addToast(`Successfully mapped ${mappedCount} file(s)!`, 'success')
         }
@@ -450,7 +450,7 @@ export default function Dashboard() {
                   </div>
                   <div className="stat-card">
                     <p className="stat-label">Mapped Entries</p>
-                    <p className="stat-value">{results.filter(r => r.mapping && !r.mapping.target_table.startsWith('unknown')).length}</p>
+                    <p className="stat-value">{results.filter(r => r.mapping && !r.mapping.target_table.toLowerCase().startsWith('unknown')).length}</p>
                     <div className="stat-accent bg-indigo" />
                   </div>
                   <div className="stat-card">
@@ -666,7 +666,7 @@ export default function Dashboard() {
                         )}
 
                         {/* Mapped / Review — show mapping editor */}
-                        {r.mapping && !r.mapping.target_table.startsWith('unknown') && r.file.status !== 'processing' && (
+                        {r.mapping && !r.mapping.target_table.toLowerCase().startsWith('unknown') && r.file.status !== 'processing' && (
                           <MappingResult mapping={r.mapping} filename={r.file.filename} fileId={r.file.id} />
                         )}
 
@@ -709,7 +709,7 @@ export default function Dashboard() {
                         )}
 
                         {/* No mapping found but not processing or error — stale state */}
-                        {(!r.mapping || r.mapping.target_table.startsWith('unknown')) && r.file.status !== 'processing' && r.file.status !== 'error' && r.file.status !== 'imported' && (
+                        {(!r.mapping || r.mapping.target_table.toLowerCase().startsWith('unknown')) && r.file.status !== 'processing' && r.file.status !== 'error' && r.file.status !== 'imported' && (
                           <div className="mapping-failed mt-3">
                             <AlertCircle className="text-error" size={20} />
                             <div>

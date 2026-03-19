@@ -1,0 +1,888 @@
+{
+  "overall": {
+    "precision": 1.0,
+    "recall": 0.2076923076923077,
+    "f1": 0.3439490445859873,
+    "correct": 27,
+    "wrong": 0,
+    "missed": 103
+  },
+  "files": [
+    {
+      "file": "synth_labs.csv",
+      "classify_ok": true,
+      "target_table": "tbImportLabsData",
+      "elapsed_s": 390.7,
+      "correct": 13,
+      "wrong": 0,
+      "missed": 49,
+      "false_positives": 0,
+      "total_expected": 62,
+      "precision": 1.0,
+      "recall": 0.21,
+      "f1": 0.347,
+      "details": [
+        {
+          "source": "CaseID",
+          "expected": "coCaseId",
+          "actual": "coCaseId",
+          "status": "CORRECT"
+        },
+        {
+          "source": "SpecDT",
+          "expected": "coSpecimen_datetime",
+          "actual": "coSpecimen_datetime",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Na",
+          "expected": "coSodium_mmol_L",
+          "actual": "coSodium_mmol_L",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Na_flag",
+          "expected": "coSodium_flag",
+          "actual": "coSodium_flag",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Na_low",
+          "expected": "cosodium_ref_low",
+          "actual": "cosodium_ref_low",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Na_high",
+          "expected": "cosodium_ref_high",
+          "actual": "cosodium_ref_high",
+          "status": "CORRECT"
+        },
+        {
+          "source": "K",
+          "expected": "coPotassium_mmol_L",
+          "actual": "coPotassium_mmol_L",
+          "status": "CORRECT"
+        },
+        {
+          "source": "K_flag",
+          "expected": "coPotassium_flag",
+          "actual": "coPotassium_flag",
+          "status": "CORRECT"
+        },
+        {
+          "source": "K_low",
+          "expected": "coPotassium_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "K_high",
+          "expected": "coPotassium_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Creat",
+          "expected": "coCreatinine_mg_dL",
+          "actual": "coCreatinine_mg_dL",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Creat_flag",
+          "expected": "coCreatinine_flag",
+          "actual": "coCreatinine_flag",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Creat_low",
+          "expected": "coCreatinine_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Creat_high",
+          "expected": "coCreatinine_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "eGFR",
+          "expected": "coEgfr_mL_min_1_73m2",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "eGFR_flag",
+          "expected": "coEgfr_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "eGFR_low",
+          "expected": "coEgfr_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "eGFR_high",
+          "expected": "coEgfr_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Gluc",
+          "expected": "coGlucose_mg_dL",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Gluc_flag",
+          "expected": "coGlucose_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Gluc_low",
+          "expected": "coGlucose_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Gluc_high",
+          "expected": "coGlucose_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Hb",
+          "expected": "coHemoglobin_g_dL",
+          "actual": "coHemoglobin_g_dL",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Hb_flag",
+          "expected": "coHb_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Hb_low",
+          "expected": "coHb_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Hb_high",
+          "expected": "coHb_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "WBC",
+          "expected": "coWbc_10e9_L",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "WBC_flag",
+          "expected": "coWbc_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "WBC_low",
+          "expected": "coWbc_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "WBC_high",
+          "expected": "coWbc_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "PLT",
+          "expected": "coPlatelets_10e9_L",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "PLT_flag",
+          "expected": "coPlatelets_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "PLT_low",
+          "expected": "coPlt_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "PLT_high",
+          "expected": "coPlt_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "CRP",
+          "expected": "coCrp_mg_L",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "CRP_flag",
+          "expected": "coCrp_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "CRP_low",
+          "expected": "coCrp_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "CRP_high",
+          "expected": "coCrp_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "ALT",
+          "expected": "coAlt_U_L",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "ALT_flag",
+          "expected": "coAlt_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "ALT_low",
+          "expected": "coAlt_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "ALT_high",
+          "expected": "coAlt_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "AST",
+          "expected": "coAst_U_L",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "AST_flag",
+          "expected": "coAst_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "AST_low",
+          "expected": "coAst_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "AST_high",
+          "expected": "coAst_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Bili",
+          "expected": "coBilirubin_mg_dL",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Bili_flag",
+          "expected": "coBilirubin_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Bili_low",
+          "expected": "coBili_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Bili_high",
+          "expected": "coBili_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Alb",
+          "expected": "coAlbumin_g_dL",
+          "actual": "coAlbumin_g_dL",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Alb_flag",
+          "expected": "coAlbumin_flag",
+          "actual": "coAlbumin_flag",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Alb_low",
+          "expected": "coAlbumin_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Alb_high",
+          "expected": "coAlbumin_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "INR",
+          "expected": "coInr",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "INR_flag",
+          "expected": "coInr_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "INR_low",
+          "expected": "coInr_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "INR_high",
+          "expected": "coInr_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Lact",
+          "expected": "coLactate_mmol_L",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Lact_flag",
+          "expected": "coLactate_flag",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Lact_low",
+          "expected": "coLactate_ref_low",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Lact_high",
+          "expected": "coLactate_ref_high",
+          "actual": null,
+          "status": "MISSED"
+        }
+      ]
+    },
+    {
+      "file": "synth_cases_icd10_ops.csv",
+      "classify_ok": true,
+      "target_table": "tbImportIcd10Data",
+      "elapsed_s": 145.9,
+      "correct": 8,
+      "wrong": 0,
+      "missed": 3,
+      "false_positives": 0,
+      "total_expected": 11,
+      "precision": 1.0,
+      "recall": 0.727,
+      "f1": 0.842,
+      "details": [
+        {
+          "source": "CaseID",
+          "expected": "coCaseId",
+          "actual": "coCaseId",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Station",
+          "expected": "coWard",
+          "actual": "coWard",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Aufnahmedatum",
+          "expected": "coAdmission_date",
+          "actual": "coAdmission_date",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Entlassungsdatum",
+          "expected": "coDischarge_date",
+          "actual": "coDischarge_date",
+          "status": "CORRECT"
+        },
+        {
+          "source": "Verweildauer_Tage",
+          "expected": "coLength_of_stay_days",
+          "actual": "coLength_of_stay_days",
+          "status": "CORRECT"
+        },
+        {
+          "source": "ICD10_Haupt",
+          "expected": "coPrimary_icd10_code",
+          "actual": "coPrimary_icd10_code",
+          "status": "CORRECT"
+        },
+        {
+          "source": "ICD10_Haupt_Bezeichnung",
+          "expected": "coPrimary_icd10_description_en",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "ICD10_Neben",
+          "expected": "coSecondary_icd10_codes",
+          "actual": "coSecondary_icd10_codes",
+          "status": "CORRECT"
+        },
+        {
+          "source": "ICD10_Neben_Bezeichnung",
+          "expected": "cpSecondary_icd10_descriptions_en",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "OPS_Code",
+          "expected": "coOps_codes",
+          "actual": "coOps_codes",
+          "status": "CORRECT"
+        },
+        {
+          "source": "OPS_Bezeichnung",
+          "expected": "ops_descriptions_en",
+          "actual": null,
+          "status": "MISSED"
+        }
+      ]
+    },
+    {
+      "file": "synth_device_motion_fall.csv",
+      "classify_ok": true,
+      "target_table": "tbImportDeviceMotionData",
+      "elapsed_s": 120.1,
+      "correct": 6,
+      "wrong": 0,
+      "missed": 2,
+      "false_positives": 0,
+      "total_expected": 8,
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.857,
+      "details": [
+        {
+          "source": "patient_id",
+          "expected": "coPatient_id",
+          "actual": "coPatient_id",
+          "status": "CORRECT"
+        },
+        {
+          "source": "timestamp",
+          "expected": "coTimestamp",
+          "actual": "coTimestamp",
+          "status": "CORRECT"
+        },
+        {
+          "source": "movement_index_0_100",
+          "expected": "coMovement_index_0_100",
+          "actual": "coMovement_index_0_100",
+          "status": "CORRECT"
+        },
+        {
+          "source": "micro_movements_count",
+          "expected": "coMicro_movements_count",
+          "actual": "coMicro_movements_count",
+          "status": "CORRECT"
+        },
+        {
+          "source": "bed_exit_detected_0_1",
+          "expected": "coBed_exit_detected_0_1",
+          "actual": "coBed_exit_detected_0_1",
+          "status": "CORRECT"
+        },
+        {
+          "source": "fall_event_0_1",
+          "expected": "coFall_event_0_1",
+          "actual": "coFall_event_0_1",
+          "status": "CORRECT"
+        },
+        {
+          "source": "impact_magnitude_g",
+          "expected": "coImpact_magnitude_g",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "post_fall_immobility_minutes",
+          "expected": "coPost_fall_immobility_minutes",
+          "actual": null,
+          "status": "MISSED"
+        }
+      ]
+    },
+    {
+      "file": "synth_device_raw_1hz_motion_fall.csv",
+      "classify_ok": false,
+      "target_table": "UNKNOWN",
+      "elapsed_s": 173.2,
+      "correct": 0,
+      "wrong": 0,
+      "missed": 18,
+      "false_positives": 0,
+      "total_expected": 18,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "details": [
+        {
+          "source": "PatientID",
+          "expected": "coPatient_id",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "DeviceID",
+          "expected": "coDevice_id",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Timestamp",
+          "expected": "coTimestamp",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "BedOccupied",
+          "expected": "coBed_occupied_0_1",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "MovementScore",
+          "expected": "coMovement_score_0_100",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "AccelX",
+          "expected": "coAccel_x_m_s2",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "AccelY",
+          "expected": "coAccel_y_m_s2",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "AccelZ",
+          "expected": "coAccel_z_m_s2",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "AccelMag",
+          "expected": "coAccel_magnitude_g",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "PressZ1",
+          "expected": "coPressure_zone1_0_100",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "PressZ2",
+          "expected": "coPressure_zone2_0_100",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "PressZ3",
+          "expected": "coPressure_zone3_0_100",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "PressZ4",
+          "expected": "coPressure_zone4_0_100",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "BedExit",
+          "expected": "coBed_exit_event_0_1",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "BedReturn",
+          "expected": "coBed_return_event_0_1",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "FallEvent",
+          "expected": "coFall_event_0_1",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "ImpactMag",
+          "expected": "coImpact_magnitude_g",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "EventID",
+          "expected": "coEvent_id",
+          "actual": null,
+          "status": "MISSED"
+        }
+      ]
+    },
+    {
+      "file": "synth_medication_raw_inpatient.csv",
+      "classify_ok": false,
+      "target_table": "UNKNOWN",
+      "elapsed_s": 3.2,
+      "correct": 0,
+      "wrong": 0,
+      "missed": 25,
+      "false_positives": 0,
+      "total_expected": 25,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "details": [
+        {
+          "source": "rec_type",
+          "expected": "coRecord_type",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "pat_id",
+          "expected": "coPatient_id",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "enc_id",
+          "expected": "coEncounter_id",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "station",
+          "expected": "coWard",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "aufnahme_dt",
+          "expected": "coAdmission_datetime",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "entlassung_dt",
+          "expected": "coDischarge_datetime",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "order_id",
+          "expected": "coOrder_id",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "uuid",
+          "expected": "coOrder_uuid",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "atc_code",
+          "expected": "coMedication_code_atc",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "medikament",
+          "expected": "coMedication_name",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "applikation",
+          "expected": "coRoute",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "dosis",
+          "expected": "coDose",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "einheit",
+          "expected": "coDose_unit",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "haeufigkeit",
+          "expected": "coFrequency",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "start_dt",
+          "expected": "coOrder_start_datetime",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "stop_dt",
+          "expected": "coOrder_stop_datetime",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "bei_bedarf",
+          "expected": "coIs_prn_0_1",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "indikation",
+          "expected": "coIndication",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "verschreiber",
+          "expected": "prescriber_role",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "bestellung_status",
+          "expected": "order_status",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "gabe_dt",
+          "expected": "administration_datetime",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "gegebene_dosis",
+          "expected": "administered_dose",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "gabe_einheit",
+          "expected": "administered_unit",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "gabe_status",
+          "expected": "administration_status",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "notiz",
+          "expected": "note",
+          "actual": null,
+          "status": "MISSED"
+        }
+      ]
+    },
+    {
+      "file": "synth_nursing_daily_reports.csv",
+      "classify_ok": false,
+      "target_table": "UNKNOWN",
+      "elapsed_s": 0.0,
+      "correct": 0,
+      "wrong": 0,
+      "missed": 6,
+      "false_positives": 0,
+      "total_expected": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "details": [
+        {
+          "source": "CaseID",
+          "expected": "coCaseId",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "PatientID",
+          "expected": "coPatient_id",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Ward",
+          "expected": "coWard",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "ReportDate",
+          "expected": "coReport_date",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "Shift",
+          "expected": "coShift",
+          "actual": null,
+          "status": "MISSED"
+        },
+        {
+          "source": "NursingNote",
+          "expected": "coNursing_note_free_text",
+          "actual": null,
+          "status": "MISSED"
+        }
+      ]
+    }
+  ]
+}
