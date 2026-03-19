@@ -12,7 +12,6 @@ type FileUpload struct {
 	UploadedAt    time.Time `json:"uploaded_at" gorm:"default:now()"`
 	Status        string    `json:"status" gorm:"default:'processing';type:varchar(20)"`
 	RowCount      int       `json:"row_count" gorm:"default:0"`
-	ColumnsMapped []string  `json:"columns_mapped" gorm:"type:jsonb;serializer:json"`
 	MappingResult string    `json:"mapping_result" gorm:"type:jsonb"`
 	SavedPath     string    `json:"saved_path" gorm:"type:varchar(500)"`
 }
@@ -34,11 +33,36 @@ type ValidationError struct {
 	ResolvedAt     *time.Time `json:"resolved_at,omitempty"`
 }
 
+// MappingCache stores LLM results keyed by column hash to avoid repeat LLM calls.
+type MappingCache struct {
+	ColumnHash    string    `json:"column_hash" gorm:"primaryKey;type:varchar(64)"`
+	TargetTable   string    `json:"target_table" gorm:"type:varchar(100)"`
+	ColumnMapping string    `json:"column_mapping" gorm:"type:jsonb"`
+	Confidence    float64   `json:"confidence"`
+	TimesUsed     int       `json:"times_used" gorm:"default:0"`
+	CreatedAt     time.Time `json:"created_at" gorm:"default:now()"`
+}
+
+func (MappingCache) TableName() string { return "tbMappingCache" }
+
+// ValidationLog records pipeline stage outcomes for provenance.
+type ValidationLog struct {
+	ID           int64     `json:"id" gorm:"primaryKey;autoIncrement"`
+	FileID       int64     `json:"file_id" gorm:"not null"`
+	Stage        string    `json:"stage" gorm:"type:varchar(20)"`
+	Severity     string    `json:"severity" gorm:"type:varchar(10)"`
+	Message      string    `json:"message" gorm:"type:text"`
+	AffectedRows int       `json:"affected_rows"`
+	CreatedAt    time.Time `json:"created_at" gorm:"default:now()"`
+}
+
+func (ValidationLog) TableName() string { return "tbValidationLog" }
+
 // ========== API Response ==========
 
 type UploadResponse struct {
-	File    FileUpload `json:"file"`
-	Mapping *MLMapping `json:"mapping,omitempty"`
+	File    FileUpload         `json:"file"`
+	Mapping *MLProcessResponse `json:"mapping,omitempty"`
 }
 
 type ErrorResponse struct {
@@ -53,22 +77,22 @@ type HealthResponse struct {
 
 // ========== ML Service Types ==========
 
-type MLMappingRequest struct {
-	Headers    []string   `json:"headers"`
-	SampleRows [][]string `json:"sample_rows"`
-	Filename   string     `json:"filename"`
-}
-
 type MLColumnMapping struct {
 	FileColumn string `json:"file_column"`
 	DBColumn   string `json:"db_column"`
 	Confidence string `json:"confidence"`
 }
 
-type MLMapping struct {
+// MLProcessResponse is the response from POST /api/process on the ML service.
+type MLProcessResponse struct {
 	TargetTable     string            `json:"target_table"`
+	Confidence      float64           `json:"confidence"`
+	Reasoning       string            `json:"reasoning"`
 	ColumnMappings  []MLColumnMapping `json:"column_mappings"`
 	UnmappedColumns []string          `json:"unmapped_columns"`
+	RowCount        int               `json:"row_count"`
+	LowConfidence   bool              `json:"low_confidence"`
+	CacheHit        bool              `json:"cache_hit"`
 }
 
 // ========== Parsed Data Models ==========
@@ -81,4 +105,13 @@ type ParsedRow struct {
 type ParsedFile struct {
 	Headers []string
 	Rows    []ParsedRow
+}
+
+// Temporary aliases — remove when upload.go and import.go are updated in Task 9
+type MLMapping = MLProcessResponse
+
+type MLMappingRequest struct {
+	Headers    []string   `json:"headers"`
+	SampleRows [][]string `json:"sample_rows"`
+	Filename   string     `json:"filename"`
 }

@@ -172,7 +172,6 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 			FileSizeBytes: fileHeader.Size,
 			Status:        status,
 			RowCount:      len(parsed.Rows),
-			ColumnsMapped: parsed.Headers,
 			MappingResult: mappingJSON,
 			SavedPath:     savedPath,
 		}
