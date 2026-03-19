@@ -66,12 +66,30 @@ func Import(c *gin.Context) {
 	// Prepare dynamic maps for GORM batch insert
 	var batch []map[string]interface{}
 
+	// Build a case-insensitive lookup from parsed file headers to handle
+	// case mismatches between ML column names and actual file headers.
+	fileHeadersLower := make(map[string]string, len(parsed.Headers))
+	for _, h := range parsed.Headers {
+		norm := strings.TrimSpace(strings.TrimPrefix(h, "\ufeff"))
+		fileHeadersLower[strings.ToLower(norm)] = h
+	}
+
+	mappedCount := 0
 	for _, row := range parsed.Rows {
 		rowMap := make(map[string]interface{})
 		for _, colMap := range mapping.ColumnMappings {
 			// Do not map unknown columns or unmapped columns
 			if colMap.DBColumn != "" && colMap.DBColumn != "unknown" {
+				// Try exact match first, then case-insensitive
 				val, exists := row.Fields[colMap.FileColumn]
+				if !exists {
+					// Case-insensitive fallback
+					normCol := strings.ToLower(strings.TrimSpace(strings.TrimPrefix(colMap.FileColumn, "\ufeff")))
+					if actualHeader, ok := fileHeadersLower[normCol]; ok {
+						val = row.Fields[actualHeader]
+						exists = true
+					}
+				}
 				if exists && val != "" {
 					// Normalize case_id values: strip "CASE-" prefix and leading zeros
 					if strings.EqualFold(colMap.DBColumn, "coCaseId") {
@@ -84,10 +102,18 @@ func Import(c *gin.Context) {
 
 		if len(rowMap) > 0 {
 			batch = append(batch, rowMap)
+			mappedCount++
 		}
 	}
 
 	if len(batch) == 0 {
+		// Diagnostic: log what columns the ML mapped vs what the file actually has
+		log.Printf("[import] No valid rows. File headers: %v", parsed.Headers)
+		for _, cm := range mapping.ColumnMappings {
+			_, found := fileHeadersLower[strings.ToLower(cm.FileColumn)]
+			log.Printf("[import] Mapping: %q → %q (header found: %v)", cm.FileColumn, cm.DBColumn, found)
+		}
+		log.Printf("[import] Total rows parsed: %d, rows with data: %d", len(parsed.Rows), mappedCount)
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "No valid data found to insert based on mapping"})
 		return
 	}
