@@ -133,7 +133,7 @@ Known target tables:
 - `tbImportMedicationInpatientData`
 - `tbImportNursingDailyReportsData`
 
-If the model returns `UNKNOWN` or confidence < 0.8 → set `low_confidence: true`, skip Stage 4, return early.
+If the model returns `UNKNOWN` or confidence < 0.8 → set `low_confidence: true`, skip Stage 4, return early with `column_mappings: []` and `unmapped_columns: []`.
 
 ### Stage 4: Map (Agent 2)
 
@@ -171,14 +171,46 @@ The `OLLAMA_MODEL` env var in docker-compose is updated from `qwen3.5:0.8b` to `
 
 ## 5. Go API Changes
 
-**`POST /api/upload`:**
-- Instead of parsing file + sending headers/sample to `/api/map`, send raw file bytes to `/api/process` (multipart)
-- Remove the inline CSV parse for ML profiling (keep Go CSV parser only for the import step)
-- Map ML response fields to `FileUpload` record: `status = "mapped" | "review" | "error"`, `MappingResult = full JSON response`
+### Go Struct Updates (`models.go`)
 
-**`POST /api/files/:id/import`:** Unchanged. Go's CSV parser reads the saved file, applies the approved mapping, bulk-inserts into Postgres in 500-row chunks.
+Replace `MLMapping` and `MLMappingRequest` with two new structs:
 
-**No new Go endpoints.** No new Go dependencies.
+```go
+// Sent to ML service as multipart — handled by Go's http client, no struct needed.
+
+// Received from ML service POST /api/process
+type MLProcessResponse struct {
+    TargetTable     string            `json:"target_table"`
+    Confidence      float64           `json:"confidence"`
+    Reasoning       string            `json:"reasoning"`
+    ColumnMappings  []MLColumnMapping `json:"column_mappings"`  // always present, may be []
+    UnmappedColumns []string          `json:"unmapped_columns"` // always present, may be []
+    RowCount        int               `json:"row_count"`
+    LowConfidence   bool              `json:"low_confidence"`
+    CacheHit        bool              `json:"cache_hit"`
+}
+```
+
+`MLColumnMapping` is unchanged: `{ file_column, db_column, confidence string }`.
+
+The import handler (`POST /api/files/:id/import`) accepts the mapping JSON stored in `MappingResult`. It binds into `MLProcessResponse` (replacing the old `MLMapping` bind). The import logic reads `ColumnMappings` — field name and type match, so import logic is unchanged.
+
+### `POST /api/upload`
+- Send raw file bytes + filename to `POST /api/process` (multipart) instead of parsed headers/sample to `/api/map`
+- Remove the inline CSV parse used for ML profiling (keep Go CSV parser for the import step only)
+- Deserialize response into `MLProcessResponse`
+- Set `FileUpload.Status`: `"mapped"` if `!LowConfidence && TargetTable != "UNKNOWN"`, else `"review"` if `LowConfidence`, else `"error"`
+- Store full JSON response as `FileUpload.MappingResult`
+
+### `POST /api/log` (new)
+- Accepts `{ file_id, stage, severity, message, affected_rows }` from ML service
+- Inserts a `tbValidationLog` row via GORM
+- Add `ValidationLog` GORM model to `models.go` and include in `RunMigrations()`
+
+### `parser.DetectFileType` update
+Expand to pass `xlsx`, `xls`, and `pdf` through instead of returning `"unknown"`. The upload handler's file-type gate currently rejects unknown types with a 400. After this change, `xlsx`/`xls`/`pdf` are accepted and their raw bytes are forwarded to the ML service. The Go CSV parser is only invoked for CSV/TSV/TXT (import step); non-CSV formats skip the Go parser and are handled entirely by the ML service.
+
+**One new Go endpoint (`POST /api/log`).** No new Go dependencies.
 
 ---
 
@@ -188,13 +220,19 @@ Two new tables added via GORM AutoMigrate in `database/migrations.go`.
 
 ### `tbMappingCache`
 
+Two distinct cache entries are written per successful upload — one from Stage 3 (classifier) and one from Stage 4 (mapper). Their `column_hash` values are always different:
+- Stage 3 key: `SHA256(sorted_column_names)`
+- Stage 4 key: `SHA256(sorted_column_names + "|" + target_table)`
+
+All cache writes use `INSERT ... ON CONFLICT (column_hash) DO UPDATE SET times_used = times_used + 1, confidence = EXCLUDED.confidence, column_mapping = EXCLUDED.column_mapping` — so repeat uploads of the same schema silently increment usage count.
+
 ```sql
-column_hash   VARCHAR(64) PRIMARY KEY   -- SHA256 of sorted column names [+ target_table for mapper]
-target_table  VARCHAR(100)              -- NULL for classifier-only cache entries
-column_mapping JSONB                    -- {file_col: db_col} map; NULL for classifier entries
-confidence    FLOAT
-times_used    INT DEFAULT 0
-created_at    TIMESTAMP DEFAULT now()
+column_hash    VARCHAR(64) PRIMARY KEY   -- SHA256 key (see above for derivation)
+target_table   VARCHAR(100)              -- result from classifier; NULL for classifier-only entries
+column_mapping JSONB                     -- {file_col: db_col} map; NULL for classifier-only entries
+confidence     FLOAT
+times_used     INT DEFAULT 0
+created_at     TIMESTAMP DEFAULT now()
 ```
 
 ### `tbValidationLog`
@@ -209,7 +247,9 @@ affected_rows INT
 created_at    TIMESTAMP DEFAULT now()
 ```
 
-The ML service writes validation log entries via a `POST /api/log` internal endpoint on the Go API (or directly via DB connection — TBD at implementation time based on what's simpler).
+The ML service writes validation log entries by calling a new **`POST /api/log`** endpoint on the Go API. Go owns the DB write. This avoids giving the ML service a direct Postgres connection and keeps DB access centralized in Go.
+
+Go change required: add `POST /api/log` endpoint that accepts `{ file_id, stage, severity, message, affected_rows }` and inserts a `tbValidationLog` row. Add a corresponding GORM model `ValidationLog` to `models.go`.
 
 ### TODO (next iteration)
 
