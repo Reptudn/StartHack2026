@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  Button, 
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Button,
   Chip,
   Table,
   TableHeader,
@@ -14,12 +14,21 @@ import {
   TableRow,
   TableCell,
   Select,
-  SelectItem
+  SelectItem,
 } from "@heroui/react"
-import { Brain, ArrowRight, Check, Pencil, CheckCircle, AlertCircle, Loader2, FileText } from "lucide-react"
+import {
+  Brain,
+  ArrowRight,
+  Check,
+  Pencil,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  FileText,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getSchema, importFile, getMappingDiagnostics } from '../api'
-import type { MLMapping, SchemaTable, MappingDiagnosticsResponse, MappingDiagnosticError } from '../api'
+import { getSchema, importFile, getMappingDiagnostics } from "../api"
+import type { MLMapping, SchemaTable, MappingDiagnosticsResponse, MappingDiagnosticError } from "../api"
 
 interface ColumnMapping {
   file_column: string
@@ -54,12 +63,7 @@ function getConfidenceChip(confidence: ColumnMapping["confidence"]) {
   )
 }
 
-export function MappingResult({ 
-  mapping, 
-  files,
-  selectedFileId,
-  onFileSelect,
-}: MappingResultProps) {
+export function MappingResult({ mapping, files, selectedFileId, onFileSelect }: MappingResultProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedMapping, setEditedMapping] = useState<MLMapping>(mapping)
   const [isImporting, setIsImporting] = useState(false)
@@ -70,12 +74,10 @@ export function MappingResult({
   const [diagnosticsLoading, setDiagnosticsLoading] = useState(false)
   const [diagnosticsError, setDiagnosticsError] = useState<string | null>(null)
 
-  // Load schemas on mount
   useEffect(() => {
     getSchema().then(setSchemas).catch(console.error)
   }, [])
 
-  // Reset edited mapping when mapping prop changes
   useEffect(() => {
     setEditedMapping(mapping)
   }, [mapping])
@@ -91,7 +93,7 @@ export function MappingResult({
   }, [selectedFileId])
 
   const highCount = editedMapping.column_mappings.filter(
-    (m) => m.confidence === "high" || m.confidence === "manual"
+    (m) => m.confidence === "high" || m.confidence === "manual",
   ).length
   const totalMapped = editedMapping.column_mappings.length
   const totalUnmapped = editedMapping.unmapped_columns.length
@@ -104,16 +106,14 @@ export function MappingResult({
     setEditedMapping((prev) => ({
       ...prev,
       column_mappings: prev.column_mappings.map((cm) =>
-        cm.file_column === fileCol
-          ? { ...cm, db_column: newDbCol, confidence: "manual" }
-          : cm
+        cm.file_column === fileCol ? { ...cm, db_column: newDbCol, confidence: "manual" } : cm,
       ),
     }))
   }
 
   const handleApprove = async () => {
     if (!selectedFileId) return
-    
+
     setIsImporting(true)
     setImportStatus("idle")
     try {
@@ -135,9 +135,9 @@ export function MappingResult({
   const errorCount = mappingErrors.filter((e) => e.severity === "error").length
   const warningCount = mappingErrors.filter((e) => e.severity === "warning").length
 
-  // Check if mapping failed
-  const isMappingFailed = !editedMapping.target_table || 
-    editedMapping.target_table.includes("unknown") || 
+  const isMappingFailed =
+    !editedMapping.target_table ||
+    editedMapping.target_table.includes("unknown") ||
     editedMapping.target_table.includes("error")
 
   return (
@@ -151,7 +151,7 @@ export function MappingResult({
               </div>
               <p className="text-lg font-bold">AI Mapping Result</p>
             </div>
-            <Select 
+            <Select
               aria-label="Select file"
               placeholder="Select a file to map..."
               selectedKeys={selectedFileId ? [selectedFileId] : []}
@@ -175,7 +175,7 @@ export function MappingResult({
           </div>
           <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
             {isEditing ? (
-              <Select 
+              <Select
                 aria-label="Target table"
                 placeholder="Select table..."
                 selectedKeys={[editedMapping.target_table]}
@@ -197,15 +197,14 @@ export function MappingResult({
                 ))}
               </Select>
             ) : (
-              <Chip variant="flat" className={cn(
-                "font-medium",
-                isMappingFailed
-                  ? "bg-destructive/10 text-destructive"
-                  : "bg-muted text-foreground"
-              )}>
-                {isMappingFailed
-                  ? "Mapping Failed" 
-                  : editedMapping.target_table}
+              <Chip
+                variant="flat"
+                className={cn(
+                  "font-medium",
+                  isMappingFailed ? "bg-destructive/10 text-destructive" : "bg-muted text-foreground",
+                )}
+              >
+                {isMappingFailed ? "Mapping Failed" : editedMapping.target_table}
               </Chip>
             )}
             {importStatus !== "success" && (
@@ -223,7 +222,6 @@ export function MappingResult({
         </div>
       </CardHeader>
       <CardBody className="space-y-6">
-        {/* Stats */}
         <div className="flex flex-wrap items-center gap-3">
           <Chip variant="flat" size="sm" className="bg-primary/10 text-primary font-semibold">
             {totalMapped} Mapped
@@ -237,14 +235,16 @@ export function MappingResult({
             </Chip>
           )}
           {mapping.confidence !== undefined && (
-            <Chip 
-              variant="flat" 
-              size="sm" 
+            <Chip
+              variant="flat"
+              size="sm"
               className={cn(
                 "font-semibold",
-                mapping.confidence >= 0.8 ? "bg-primary/10 text-primary" :
-                mapping.confidence >= 0.5 ? "bg-chart-3/10 text-chart-3" :
-                "bg-destructive/10 text-destructive"
+                mapping.confidence >= 0.8
+                  ? "bg-primary/10 text-primary"
+                  : mapping.confidence >= 0.5
+                    ? "bg-chart-3/10 text-chart-3"
+                    : "bg-destructive/10 text-destructive",
               )}
             >
               {Math.round(mapping.confidence * 100)}% Confidence
@@ -257,16 +257,15 @@ export function MappingResult({
           )}
         </div>
 
-        {/* Mapping Table */}
         {totalMapped > 0 && (
           <div className="overflow-x-auto rounded-xl border border-border">
-            <Table 
+            <Table
               aria-label="Column Mapping Table"
               shadow="none"
               removeWrapper
               classNames={{
                 th: "bg-muted/30 text-muted-foreground font-semibold text-xs uppercase tracking-wide py-4",
-                td: "py-4"
+                td: "py-4",
               }}
             >
               <TableHeader>
@@ -279,9 +278,7 @@ export function MappingResult({
                 {editedMapping.column_mappings.map((cm, i) => (
                   <TableRow key={i} className="border-b border-border last:border-none">
                     <TableCell>
-                      <code className="px-2.5 py-1.5 rounded-lg bg-muted text-sm font-mono">
-                        {cm.file_column}
-                      </code>
+                      <code className="px-2.5 py-1.5 rounded-lg bg-muted text-sm font-mono">{cm.file_column}</code>
                     </TableCell>
                     <TableCell>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
@@ -303,12 +300,14 @@ export function MappingResult({
                           }}
                         >
                           {[
-                            <SelectItem key="unknown" textValue="-- Ignore --">-- Ignore --</SelectItem>,
+                            <SelectItem key="unknown" textValue="-- Ignore --">
+                              -- Ignore --
+                            </SelectItem>,
                             ...(currentSchema?.columns || []).map((col) => (
                               <SelectItem key={col} textValue={col}>
                                 {col}
                               </SelectItem>
-                            ))
+                            )),
                           ]}
                         </Select>
                       ) : (
@@ -327,7 +326,6 @@ export function MappingResult({
           </div>
         )}
 
-        {/* Unmapped Columns */}
         {totalUnmapped > 0 && (
           <div className="space-y-3 p-4 rounded-xl bg-chart-3/5 border border-chart-3/20">
             <div className="flex items-center gap-2 text-chart-3">
@@ -344,7 +342,6 @@ export function MappingResult({
           </div>
         )}
 
-        {/* File Columns & Mapping Diagnostics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="border border-border bg-card">
             <CardHeader className="pb-3 border-b border-border">
@@ -421,23 +418,31 @@ export function MappingResult({
                         err.severity === "error"
                           ? "border-destructive/20 bg-destructive/5 text-destructive"
                           : err.severity === "warning"
-                          ? "border-chart-3/20 bg-chart-3/5 text-chart-3"
-                          : "border-primary/20 bg-primary/5 text-primary"
+                            ? "border-chart-3/20 bg-chart-3/5 text-chart-3"
+                            : "border-primary/20 bg-primary/5 text-primary",
                       )}
                     >
                       <div className="mt-0.5">
-                        {err.severity === "error" ? (
-                          <AlertCircle className="h-4 w-4" />
-                        ) : (
-                          <AlertCircle className="h-4 w-4" />
-                        )}
+                        <AlertCircle className="h-4 w-4" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-semibold">{err.message}</p>
                         <div className="text-xs text-muted-foreground mt-1">
-                          {err.file_column && <span>File: <code>{err.file_column}</code> </span>}
-                          {err.db_column && <span>DB: <code>{err.db_column}</code> </span>}
-                          {err.target_table && <span>Table: <code>{err.target_table}</code></span>}
+                          {err.file_column && (
+                            <span>
+                              File: <code>{err.file_column}</code>{" "}
+                            </span>
+                          )}
+                          {err.db_column && (
+                            <span>
+                              DB: <code>{err.db_column}</code>{" "}
+                            </span>
+                          )}
+                          {err.target_table && (
+                            <span>
+                              Table: <code>{err.target_table}</code>
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -448,7 +453,6 @@ export function MappingResult({
           </Card>
         </div>
 
-        {/* Import Status & Button */}
         <div className="pt-4 border-t border-border space-y-4">
           {importMessage && (
             <div
@@ -456,14 +460,10 @@ export function MappingResult({
                 "flex items-center gap-3 p-4 rounded-xl animate-in fade-in slide-in-from-bottom-2 duration-300",
                 importStatus === "success"
                   ? "bg-primary/10 text-primary border border-primary/20"
-                  : "bg-destructive/10 text-destructive border border-destructive/20"
+                  : "bg-destructive/10 text-destructive border border-destructive/20",
               )}
             >
-              {importStatus === "success" ? (
-                <CheckCircle className="h-5 w-5" />
-              ) : (
-                <AlertCircle className="h-5 w-5" />
-              )}
+              {importStatus === "success" ? <CheckCircle className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
               <span className="font-semibold">{importMessage}</span>
             </div>
           )}

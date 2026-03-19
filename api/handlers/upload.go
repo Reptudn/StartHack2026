@@ -260,11 +260,24 @@ func (h *UploadHandler) ProcessMLAsync(
 	}
 	database.DB.Model(&fileUpload).Updates(updates)
 
-	// Report final state
+	// Report final state — this fires AFTER the DB is updated so the
+	// frontend can safely reload and see the persisted mapping result.
 	if status == "error" {
 		reportProgress(jobID, "error", "Mapping failed", 0)
+	} else if mapping != nil {
+		reportProgressWithData(jobID, "done",
+			fmt.Sprintf("Mapped %d columns to %s", len(mapping.ColumnMappings), mapping.TargetTable),
+			100,
+			map[string]interface{}{
+				"target_table":    mapping.TargetTable,
+				"confidence":      mapping.Confidence,
+				"columns_mapped":  len(mapping.ColumnMappings),
+				"columns_unmapped": len(mapping.UnmappedColumns),
+				"row_count":       rowCount,
+			},
+		)
 	} else {
-		reportProgress(jobID, "done", fmt.Sprintf("Mapped %d rows to %s", rowCount, mapping.TargetTable), 100)
+		reportProgress(jobID, "done", "Processing complete", 100)
 	}
 
 	log.Printf("[upload] Async processing complete %s: jobId=%s status=%s rows=%d", filename, jobID, status, rowCount)
@@ -272,6 +285,11 @@ func (h *UploadHandler) ProcessMLAsync(
 
 // reportProgress updates the in-memory job store (which notifies SSE subscribers).
 func reportProgress(jobID, stage, message string, percent int) {
+	reportProgressWithData(jobID, stage, message, percent, nil)
+}
+
+// reportProgressWithData updates the job store with an optional rich data payload.
+func reportProgressWithData(jobID, stage, message string, percent int, data map[string]interface{}) {
 	js := getOrCreateJob(jobID)
 	p := models.JobProgress{
 		JobID:     jobID,
@@ -279,6 +297,7 @@ func reportProgress(jobID, stage, message string, percent int) {
 		Message:   message,
 		Percent:   percent,
 		Timestamp: time.Now().UnixMilli(),
+		Data:      data,
 	}
 	js.mu.Lock()
 	js.progress = p
@@ -290,13 +309,18 @@ func reportProgress(jobID, stage, message string, percent int) {
 	}
 	js.mu.Unlock()
 
-	// Persist minimal progress for resiliency when failures occur before ML callbacks.
+	dataJSON := "{}"
+	if data != nil {
+		if b, err := json.Marshal(data); err == nil {
+			dataJSON = string(b)
+		}
+	}
 	state := models.JobState{
 		JobID:     jobID,
 		Stage:     stage,
 		Message:   message,
 		Percent:   percent,
-		Data:      "{}",
+		Data:      dataJSON,
 		UpdatedAt: time.Now(),
 	}
 	database.DB.Save(&state)

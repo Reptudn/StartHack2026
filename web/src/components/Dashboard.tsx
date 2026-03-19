@@ -7,34 +7,40 @@ import { FileUpload } from "./FileUpload"
 import { DataQualityTable } from "./DataQualityTable"
 import { ErrorCorrectionPanel } from "./ErrorCorrectionPanel"
 import { MappingResult } from "./MappingResult"
-import { 
-  Button, 
-  Chip, 
-  Card, 
-  CardBody, 
-  CardHeader
+import {
+  Button,
+  Chip,
+  Card,
+  CardBody,
+  CardHeader,
 } from "@heroui/react"
-import { 
-  Activity, 
-  LayoutDashboard, 
-  Upload, 
-  FileText, 
+import {
+  Activity,
+  LayoutDashboard,
+  Upload,
+  FileText,
   FolderOpen,
   Clock,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { uploadFiles as apiUpload, getFiles, healthCheck, subscribeToProgress, getJobProgress, reprocessFile } from '../api'
-import type { ApiFile, MLMapping, JobProgress } from '../api'
-import type { ProcessingStep } from './FileUpload'
+import {
+  uploadFiles as apiUpload,
+  getFiles,
+  healthCheck,
+  subscribeToProgress,
+  getJobProgress,
+  reprocessFile,
+} from "../api"
+import type { ApiFile, MLMapping, JobProgress } from "../api"
+import type { ProcessingStep } from "./FileUpload"
 
 interface UploadResult {
   file: ApiFile
   mapping?: MLMapping
 }
 
-// Per-file live progress state
 interface FileProgressMap {
   [fileId: number]: JobProgress
 }
@@ -54,23 +60,22 @@ export default function Dashboard() {
   const activeSubscriptions = useRef<Map<number, () => void>>(new Map())
 
   const startPollingFile = useCallback((fileId: number, jobId: string) => {
-    // Don't double-subscribe
     if (activeSubscriptions.current.has(fileId)) return
 
-    // First check current state
-    getJobProgress(jobId).then(p => {
-      if (p && (p.stage === 'done' || p.stage === 'error')) {
-        setFileProgress(prev => ({ ...prev, [fileId]: p }))
+    getJobProgress(jobId).then((p) => {
+      if (p && (p.stage === "done" || p.stage === "error")) {
+        setFileProgress((prev) => ({ ...prev, [fileId]: p }))
         return
       }
-      // If still processing, subscribe to SSE
+
       if (p) {
-        setFileProgress(prev => ({ ...prev, [fileId]: p }))
+        setFileProgress((prev) => ({ ...prev, [fileId]: p }))
       }
+
       const unsub = subscribeToProgress(
         jobId,
         (progress) => {
-          setFileProgress(prev => ({ ...prev, [fileId]: progress }))
+          setFileProgress((prev) => ({ ...prev, [fileId]: progress }))
         },
         () => {
           activeSubscriptions.current.delete(fileId)
@@ -85,30 +90,30 @@ export default function Dashboard() {
       const apiFiles = await getFiles()
       const converted: UploadResult[] = apiFiles.map((f) => {
         let mapping: MLMapping | undefined
-        if (f.mapping_result && f.mapping_result !== '{}') {
+        if (f.mapping_result && f.mapping_result !== "{}") {
           try {
-            mapping = typeof f.mapping_result === 'string' ? JSON.parse(f.mapping_result) : f.mapping_result
-          } catch { /* ignore */ }
+            mapping = typeof f.mapping_result === "string" ? JSON.parse(f.mapping_result) : f.mapping_result
+          } catch {
+            // ignore
+          }
         }
         return { file: f, mapping }
       })
       setResults(converted)
 
-      // Check for any "processing" files and start polling their progress
       for (const f of apiFiles) {
-        if (f.status === 'processing' && f.job_id) {
+        if (f.status === "processing" && f.job_id) {
           startPollingFile(f.id, f.job_id)
         }
       }
     } catch (err) {
-      console.error('Failed to load files:', err)
+      console.error("Failed to load files:", err)
     }
   }, [startPollingFile])
 
-  // Cleanup subscriptions on unmount
   useEffect(() => {
     return () => {
-      activeSubscriptions.current.forEach(unsub => unsub())
+      activeSubscriptions.current.forEach((unsub) => unsub())
       activeSubscriptions.current.clear()
     }
   }, [])
@@ -121,18 +126,21 @@ export default function Dashboard() {
   }, [loadFiles])
 
   const handleRetry = async (fileId: number) => {
-    setReprocessing(prev => new Set(prev).add(fileId))
+    setReprocessing((prev) => new Set(prev).add(fileId))
     try {
       const res = await reprocessFile(fileId)
       startPollingFile(fileId, res.job_id)
-      // Update the file status immediately in UI
-      setResults(prev => prev.map(r =>
-        r.file.id === fileId ? { ...r, file: { ...r.file, status: 'processing' }, mapping: undefined } : r
-      ))
+      setResults((prev) =>
+        prev.map((r) =>
+          r.file.id === fileId
+            ? { ...r, file: { ...r.file, status: "processing" }, mapping: undefined }
+            : r,
+        ),
+      )
     } catch (err) {
-      console.error('Retry failed:', err)
+      console.error("Retry failed:", err)
     } finally {
-      setReprocessing(prev => {
+      setReprocessing((prev) => {
         const next = new Set(prev)
         next.delete(fileId)
         return next
@@ -140,56 +148,56 @@ export default function Dashboard() {
     }
   }
 
-  const handleFilesUploaded = useCallback(async (newFiles: File[]) => {
-    if (!isBackendOnline) return
-    setIsUploading(true)
-    setUploadStep('extracting')
-    
-    // Simulate step progression during upload since backend processes asynchronously
-    // This gives visual feedback while the request is in flight
-    const stepTimers: ReturnType<typeof setTimeout>[] = []
-    stepTimers.push(setTimeout(() => setUploadStep('inspecting'), 800))
-    stepTimers.push(setTimeout(() => setUploadStep('classifying'), 1600))
-    stepTimers.push(setTimeout(() => setUploadStep('mapping'), 2400))
-    
-    try {
-      const uploadResults = await apiUpload(newFiles, true)
-      
-      // Clear timers and set completed
-      stepTimers.forEach(clearTimeout)
-      setUploadStep('completed')
-      
-      const converted: UploadResult[] = uploadResults.map((r) => ({
-        file: r.file,
-        mapping: r.mapping,
-      }))
-      setResults((prev) => [...converted, ...prev])
+  const handleFilesUploaded = useCallback(
+    async (newFiles: File[]) => {
+      if (!isBackendOnline) return
+      setIsUploading(true)
+      setUploadStep("extracting")
 
-      // Subscribe to SSE progress for each file's job
-      for (const result of uploadResults) {
-        if (result.job_id) {
-          startPollingFile(result.file.id, result.job_id)
+      const stepTimers: ReturnType<typeof setTimeout>[] = []
+      stepTimers.push(setTimeout(() => setUploadStep("inspecting"), 800))
+      stepTimers.push(setTimeout(() => setUploadStep("classifying"), 1600))
+      stepTimers.push(setTimeout(() => setUploadStep("mapping"), 2400))
+
+      try {
+        const uploadResults = await apiUpload(newFiles, true)
+
+        stepTimers.forEach(clearTimeout)
+        setUploadStep("completed")
+
+        const converted: UploadResult[] = uploadResults.map((r) => ({
+          file: r.file,
+          mapping: r.mapping,
+        }))
+        setResults((prev) => [...converted, ...prev])
+
+        for (const result of uploadResults) {
+          if (result.job_id) {
+            startPollingFile(result.file.id, result.job_id)
+          }
         }
+
+        setTimeout(() => setUploadStep(null), 1500)
+      } catch (err) {
+        stepTimers.forEach(clearTimeout)
+        setUploadStep("failed")
+        console.error("Upload failed:", err)
+        setTimeout(() => setUploadStep(null), 2000)
+      } finally {
+        setIsUploading(false)
       }
-      
-      // Reset step after a short delay so user sees "completed"
-      setTimeout(() => setUploadStep(null), 1500)
-    } catch (err) {
-      // Clear timers and set failed
-      stepTimers.forEach(clearTimeout)
-      setUploadStep('failed')
-      console.error('Upload failed:', err)
-      
-      // Reset step after a delay
-      setTimeout(() => setUploadStep(null), 2000)
-    } finally {
-      setIsUploading(false)
-    }
-  }, [isBackendOnline, startPollingFile])
+    },
+    [isBackendOnline, startPollingFile],
+  )
 
   const totalFiles = results.length
-  const validFiles = results.filter((r) => r.file.status === "completed" || r.file.status === "mapped" || r.file.status === "imported").length
-  const errorFiles = results.reduce((acc, r) => acc + (r.file.status === 'failed' || r.file.status === 'error' ? 1 : 0), 0)
+  const validFiles = results.filter(
+    (r) => r.file.status === "completed" || r.file.status === "mapped" || r.file.status === "imported",
+  ).length
+  const errorFiles = results.reduce(
+    (acc, r) => acc + (r.file.status === "failed" || r.file.status === "error" ? 1 : 0),
+    0,
+  )
 
   const navItems = [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
@@ -208,13 +216,12 @@ export default function Dashboard() {
       error: { className: "bg-destructive/10 text-destructive", label: "Error" },
     }
     const s = statusMap[status] || { className: "bg-muted text-muted-foreground", label: status }
-    
-    // Show progress stage for processing files
+
     const progress = fileId ? fileProgress[fileId] : undefined
-    const label = progress && status === 'processing' 
+    const label = progress && status === "processing"
       ? `${progress.stage.charAt(0).toUpperCase() + progress.stage.slice(1)}...`
       : s.label
-    
+
     return (
       <Chip variant="flat" size="sm" className={cn("font-medium", s.className)}>
         {label}
@@ -225,25 +232,24 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground dark">
       <div className="flex">
-        {/* Sidebar */}
         <aside className="hidden lg:flex w-64 flex-col border-r border-border bg-card h-screen fixed top-0 left-0 z-20">
-          {/* Logo */}
           <div className="p-6 border-b border-border">
-            <div 
-              className="flex items-center gap-3 cursor-pointer group" 
-              onClick={() => navigate('/')}
+            <div
+              className="flex items-center gap-3 cursor-pointer group"
+              onClick={() => navigate("/")}
             >
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-all duration-200 group-hover:scale-105">
                 <Activity className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <span className="font-bold text-lg tracking-tight group-hover:text-primary transition-colors">HealthMap</span>
+                <span className="font-bold text-lg tracking-tight group-hover:text-primary transition-colors">
+                  HealthMap
+                </span>
                 <p className="text-xs text-muted-foreground">Medical Data Platform</p>
               </div>
             </div>
           </div>
-          
-          {/* Navigation */}
+
           <nav className="flex-1 px-3 py-4 space-y-1">
             {navItems.map((item) => (
               <Button
@@ -252,9 +258,9 @@ export default function Dashboard() {
                 color={activeTab === item.key ? "primary" : "default"}
                 className={cn(
                   "w-full justify-start gap-3 h-11 font-medium transition-all duration-200",
-                  activeTab === item.key 
-                    ? "bg-primary/10 text-primary font-semibold" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  activeTab === item.key
+                    ? "bg-primary/10 text-primary font-semibold"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                 )}
                 onPress={() => setActiveTab(item.key)}
                 startContent={<item.icon className="h-4 w-4" />}
@@ -265,9 +271,7 @@ export default function Dashboard() {
           </nav>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 min-h-screen lg:ml-64">
-          {/* Header */}
           <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border">
             <div className="flex items-center justify-between px-6 py-6">
               <div>
@@ -276,26 +280,27 @@ export default function Dashboard() {
                   Manage and analyze your clinical data imports
                 </p>
               </div>
-              <Chip 
-                variant="flat" 
+              <Chip
+                variant="flat"
                 color={isBackendOnline ? "success" : "danger"}
                 className={cn(
                   "gap-2 font-medium",
-                  isBackendOnline ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
+                  isBackendOnline ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive",
                 )}
                 startContent={
-                  <span className={cn(
-                    "h-2 w-2 rounded-full animate-pulse",
-                    isBackendOnline ? "bg-primary" : "bg-destructive"
-                  )} />
+                  <span
+                    className={cn(
+                      "h-2 w-2 rounded-full animate-pulse",
+                      isBackendOnline ? "bg-primary" : "bg-destructive",
+                    )}
+                  />
                 }
               >
-                {isBackendOnline ? 'API Connected' : 'API Offline'}
+                {isBackendOnline ? "API Connected" : "API Offline"}
               </Chip>
             </div>
           </header>
 
-          {/* Mobile Navigation */}
           <div className="lg:hidden px-6 py-3 border-b border-border bg-card/50">
             <div className="flex gap-2 overflow-x-auto">
               {navItems.map((item) => (
@@ -306,7 +311,7 @@ export default function Dashboard() {
                   size="sm"
                   className={cn(
                     "gap-2 shrink-0",
-                    activeTab === item.key && "bg-primary/10 text-primary font-semibold"
+                    activeTab === item.key && "bg-primary/10 text-primary font-semibold",
                   )}
                   onPress={() => setActiveTab(item.key)}
                   startContent={<item.icon className="h-4 w-4" />}
@@ -317,29 +322,23 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Content */}
           <div className="p-6 space-y-6">
             {activeTab === "overview" && (
               <div className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-500">
-                <StatsCards
-                  totalFiles={totalFiles}
-                  validFiles={validFiles}
-                  errorFiles={errorFiles}
-                />
+                <StatsCards totalFiles={totalFiles} validFiles={validFiles} errorFiles={errorFiles} />
 
-                {/* Recent Activity */}
                 <Card className="border border-border bg-card shadow-sm rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                   <CardHeader className="flex justify-between items-center pb-3 border-b border-border">
                     <div className="flex items-center gap-2">
-                       <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                         <Clock className="h-4 w-4 text-primary" />
-                       </div>
-                       <p className="text-lg font-semibold">Recent Uploads</p>
+                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Clock className="h-4 w-4 text-primary" />
+                      </div>
+                      <p className="text-lg font-semibold">Recent Uploads</p>
                     </div>
-                    <Button 
-                      variant="light" 
-                      color="primary" 
-                      size="sm" 
+                    <Button
+                      variant="light"
+                      color="primary"
+                      size="sm"
                       onPress={() => setActiveTab("records")}
                       className="font-medium"
                     >
@@ -353,9 +352,7 @@ export default function Dashboard() {
                           <FileText className="h-8 w-8 text-muted-foreground" />
                         </div>
                         <p className="font-semibold text-muted-foreground">No files uploaded yet</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Upload files to see them here
-                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">Upload files to see them here</p>
                       </div>
                     ) : (
                       <div className="grid gap-3 sm:grid-cols-2">
@@ -369,9 +366,7 @@ export default function Dashboard() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-sm truncate">{r.file.filename}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {r.file.row_count} rows processed
-                              </p>
+                              <p className="text-xs text-muted-foreground">{r.file.row_count} rows processed</p>
                             </div>
                             {getStatusChip(r.file.status, r.file.id)}
                           </div>
@@ -382,33 +377,39 @@ export default function Dashboard() {
                 </Card>
 
                 <DataQualityTable
-                   files={results.map(r => ({
-                     id: r.file.id.toString(),
-                     name: r.file.filename,
-                     size: r.file.file_size_bytes,
-                     type: r.file.file_type,
-                     status: (r.file.status === 'completed' || r.file.status === 'mapped' || r.file.status === 'imported') ? 'valid' : 'error',
-                     errorCount: r.file.status === 'failed' || r.file.status === 'error' ? 1 : 0,
-                     completeness: 100,
-                     columnsMapped: [], 
-                     errors: []
-                   }))}
+                  files={results.map((r) => ({
+                    id: r.file.id.toString(),
+                    name: r.file.filename,
+                    size: r.file.file_size_bytes,
+                    type: r.file.file_type,
+                    status:
+                      r.file.status === "completed" || r.file.status === "mapped" || r.file.status === "imported"
+                        ? "valid"
+                        : "error",
+                    errorCount: r.file.status === "failed" || r.file.status === "error" ? 1 : 0,
+                    completeness: 100,
+                    columnsMapped: [],
+                    errors: [],
+                  }))}
                   onFixClick={(id) => setSelectedFileId(id)}
                   selectedFileId={selectedFileId}
                 />
 
-                {selectedFileId && results.find(r => r.file.id.toString() === selectedFileId) && (
+                {selectedFileId && results.find((r) => r.file.id.toString() === selectedFileId) && (
                   <ErrorCorrectionPanel
                     file={{
                       id: selectedFileId,
-                      name: results.find(r => r.file.id.toString() === selectedFileId)!.file.filename,
-                      size: results.find(r => r.file.id.toString() === selectedFileId)!.file.file_size_bytes,
-                      type: results.find(r => r.file.id.toString() === selectedFileId)!.file.file_type,
-                      status: results.find(r => r.file.id.toString() === selectedFileId)!.file.status === 'completed' ? 'valid' : 'error',
+                      name: results.find((r) => r.file.id.toString() === selectedFileId)!.file.filename,
+                      size: results.find((r) => r.file.id.toString() === selectedFileId)!.file.file_size_bytes,
+                      type: results.find((r) => r.file.id.toString() === selectedFileId)!.file.file_type,
+                      status:
+                        results.find((r) => r.file.id.toString() === selectedFileId)!.file.status === "completed"
+                          ? "valid"
+                          : "error",
                       errorCount: 0,
                       completeness: 100,
                       columnsMapped: [],
-                      errors: []
+                      errors: [],
                     }}
                     onClose={() => setSelectedFileId(null)}
                     onResolve={() => {}}
@@ -420,16 +421,16 @@ export default function Dashboard() {
             {activeTab === "upload" && (
               <div className="max-w-2xl mx-auto animate-in fade-in-50 slide-in-from-bottom-2 duration-500">
                 <FileUpload
-                  files={results.map(r => ({ 
-                    id: r.file.id.toString(), 
-                    name: r.file.filename, 
-                    size: r.file.file_size_bytes, 
-                    type: r.file.file_type, 
-                    status: r.file.status === 'completed' ? 'valid' : r.file.status === 'processing' ? 'processing' : 'error', 
-                    errorCount: 0, 
-                    completeness: 100, 
-                    columnsMapped: [], 
-                    errors: [] 
+                  files={results.map((r) => ({
+                    id: r.file.id.toString(),
+                    name: r.file.filename,
+                    size: r.file.file_size_bytes,
+                    type: r.file.file_type,
+                    status: r.file.status === "completed" ? "valid" : r.file.status === "processing" ? "processing" : "error",
+                    errorCount: 0,
+                    completeness: 100,
+                    columnsMapped: [],
+                    errors: [],
                   }))}
                   onFilesUploaded={handleFilesUploaded}
                   isUploading={isUploading}
@@ -441,25 +442,29 @@ export default function Dashboard() {
             {activeTab === "records" && (
               <div className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-500">
                 <DataQualityTable
-                   files={results.map(r => ({
-                     id: r.file.id.toString(),
-                     name: r.file.filename,
-                     size: r.file.file_size_bytes,
-                     type: r.file.file_type,
-                     status: (r.file.status === 'completed' || r.file.status === 'mapped' || r.file.status === 'imported') ? 'valid' : r.file.status === 'processing' ? 'processing' : 'error',
-                     errorCount: r.file.status === 'failed' || r.file.status === 'error' ? 1 : 0,
-                     completeness: 100,
-                     columnsMapped: [],
-                     errors: []
-                   }))}
+                  files={results.map((r) => ({
+                    id: r.file.id.toString(),
+                    name: r.file.filename,
+                    size: r.file.file_size_bytes,
+                    type: r.file.file_type,
+                    status:
+                      r.file.status === "completed" || r.file.status === "mapped" || r.file.status === "imported"
+                        ? "valid"
+                        : r.file.status === "processing"
+                          ? "processing"
+                          : "error",
+                    errorCount: r.file.status === "failed" || r.file.status === "error" ? 1 : 0,
+                    completeness: 100,
+                    columnsMapped: [],
+                    errors: [],
+                  }))}
                   onFixClick={(id) => setSelectedFileId(id)}
                   selectedFileId={selectedFileId}
                   onRowClick={(id) => setMappingFileId(id)}
                   activeRowId={mappingFileId}
                 />
 
-                {/* Show retry button for failed files */}
-                {results.filter(r => r.file.status === 'error' || r.file.status === 'failed').length > 0 && (
+                {results.filter((r) => r.file.status === "error" || r.file.status === "failed").length > 0 && (
                   <Card className="border border-destructive/20 bg-destructive/5 rounded-2xl">
                     <CardBody className="p-4">
                       <div className="flex items-start gap-3">
@@ -470,19 +475,28 @@ export default function Dashboard() {
                             Click the retry button to reprocess failed files.
                           </p>
                           <div className="flex flex-wrap gap-2 mt-3">
-                            {results.filter(r => r.file.status === 'error' || r.file.status === 'failed').map(r => (
-                              <Button
-                                key={r.file.id}
-                                variant="bordered"
-                                size="sm"
-                                className="gap-2"
-                                isDisabled={reprocessing.has(r.file.id)}
-                                onPress={() => handleRetry(r.file.id)}
-                                startContent={<RefreshCw className={cn("h-3.5 w-3.5", reprocessing.has(r.file.id) && "animate-spin")} />}
-                              >
-                                {reprocessing.has(r.file.id) ? 'Retrying...' : `Retry ${r.file.filename}`}
-                              </Button>
-                            ))}
+                            {results
+                              .filter((r) => r.file.status === "error" || r.file.status === "failed")
+                              .map((r) => (
+                                <Button
+                                  key={r.file.id}
+                                  variant="bordered"
+                                  size="sm"
+                                  className="gap-2"
+                                  isDisabled={reprocessing.has(r.file.id)}
+                                  onPress={() => handleRetry(r.file.id)}
+                                  startContent={
+                                    <RefreshCw
+                                      className={cn(
+                                        "h-3.5 w-3.5",
+                                        reprocessing.has(r.file.id) && "animate-spin",
+                                      )}
+                                    />
+                                  }
+                                >
+                                  {reprocessing.has(r.file.id) ? "Retrying..." : `Retry ${r.file.filename}`}
+                                </Button>
+                              ))}
                           </div>
                         </div>
                       </div>
@@ -490,10 +504,10 @@ export default function Dashboard() {
                   </Card>
                 )}
 
-                {mappingFileId && results.find(r => r.file.id.toString() === mappingFileId)?.mapping && (
+                {mappingFileId && results.find((r) => r.file.id.toString() === mappingFileId)?.mapping && (
                   <MappingResult
-                    mapping={results.find(r => r.file.id.toString() === mappingFileId)!.mapping!}
-                    files={results.map(r => ({ id: r.file.id.toString(), name: r.file.filename }))}
+                    mapping={results.find((r) => r.file.id.toString() === mappingFileId)!.mapping!}
+                    files={results.map((r) => ({ id: r.file.id.toString(), name: r.file.filename }))}
                     selectedFileId={mappingFileId}
                     onFileSelect={(id) => setMappingFileId(id)}
                   />
