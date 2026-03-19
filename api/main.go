@@ -47,10 +47,12 @@ func main() {
 	r.GET("/api/health", healthCheck)
 
 	uploadHandler := handlers.NewUploadHandler(cfg)
+	testHandler := handlers.NewTestHandler(cfg)
 
 	api := r.Group("/api")
 	{
 		api.POST("/upload", uploadHandler.Upload)
+		api.POST("/test", testHandler.RunTests)
 		api.GET("/schema", handlers.GetSchema)
 		api.GET("/files", handlers.ListFiles)
 		api.GET("/files/:id", handlers.GetFile)
@@ -58,7 +60,16 @@ func main() {
 		api.GET("/files/:id/validation", handlers.GetFileValidation)
 		api.POST("/validation/:id/resolve", handlers.ResolveValidationError)
 		api.POST("/files/:id/import", handlers.Import)
+		api.POST("/files/:id/reprocess", handlers.ReprocessFile(cfg))
 		api.DELETE("/files/:id", handlers.DeleteFile)
+		api.POST("/log", handlers.CreateLog)
+		api.GET("/cache", handlers.GetCache)
+		api.POST("/cache", handlers.PostCache)
+
+		// Job progress (SSE)
+		api.POST("/jobs/:id/progress", handlers.PostProgress)
+		api.GET("/jobs/:id/stream", handlers.StreamProgress)
+		api.GET("/jobs/:id", handlers.GetProgress)
 	}
 
 	addr := ":" + cfg.Port

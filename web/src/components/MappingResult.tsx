@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { 
   Card, 
   CardBody, 
@@ -18,22 +18,13 @@ import {
 } from "@heroui/react"
 import { Brain, ArrowRight, Check, Pencil, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getSchema, importFile } from '../api'
+import type { MLMapping, SchemaTable } from '../api'
 
 interface ColumnMapping {
   file_column: string
   db_column: string
   confidence: "high" | "medium" | "low" | "manual"
-}
-
-interface MLMapping {
-  target_table: string
-  column_mappings: ColumnMapping[]
-  unmapped_columns: string[]
-}
-
-interface SchemaTable {
-  name: string
-  columns: string[]
 }
 
 interface FileOption {
@@ -46,8 +37,6 @@ interface MappingResultProps {
   files: FileOption[]
   selectedFileId: string | null
   onFileSelect: (fileId: string) => void
-  onImport?: (fileId: string, mapping: MLMapping) => Promise<{ rows_inserted: number }>
-  schemas?: SchemaTable[]
 }
 
 function getConfidenceChip(confidence: ColumnMapping["confidence"]) {
@@ -70,14 +59,23 @@ export function MappingResult({
   files,
   selectedFileId,
   onFileSelect,
-  onImport,
-  schemas = []
 }: MappingResultProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedMapping, setEditedMapping] = useState<MLMapping>(mapping)
   const [isImporting, setIsImporting] = useState(false)
   const [importStatus, setImportStatus] = useState<"idle" | "success" | "error">("idle")
   const [importMessage, setImportMessage] = useState("")
+  const [schemas, setSchemas] = useState<SchemaTable[]>([])
+
+  // Load schemas on mount
+  useEffect(() => {
+    getSchema().then(setSchemas).catch(console.error)
+  }, [])
+
+  // Reset edited mapping when mapping prop changes
+  useEffect(() => {
+    setEditedMapping(mapping)
+  }, [mapping])
 
   const highCount = editedMapping.column_mappings.filter(
     (m) => m.confidence === "high" || m.confidence === "manual"
@@ -101,12 +99,12 @@ export function MappingResult({
   }
 
   const handleApprove = async () => {
-    if (!onImport || !selectedFileId) return
+    if (!selectedFileId) return
     
     setIsImporting(true)
     setImportStatus("idle")
     try {
-      const res = await onImport(selectedFileId, editedMapping)
+      const res = await importFile(parseInt(selectedFileId), editedMapping)
       setImportStatus("success")
       setImportMessage(`Successfully imported ${res.rows_inserted} rows!`)
       setIsEditing(false)
@@ -119,6 +117,11 @@ export function MappingResult({
   }
 
   const currentSchema = schemas.find((s) => s.name === editedMapping.target_table)
+
+  // Check if mapping failed
+  const isMappingFailed = !editedMapping.target_table || 
+    editedMapping.target_table.includes("unknown") || 
+    editedMapping.target_table.includes("error")
 
   return (
     <Card className="border border-border bg-card shadow-sm rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
@@ -179,15 +182,13 @@ export function MappingResult({
             ) : (
               <Chip variant="flat" className={cn(
                 "font-medium",
-                (!editedMapping.target_table || editedMapping.target_table.includes("unknown") || editedMapping.target_table.includes("error"))
+                isMappingFailed
                   ? "bg-destructive/10 text-destructive"
                   : "bg-muted text-foreground"
               )}>
-                {(!editedMapping.target_table || editedMapping.target_table.includes("error"))
+                {isMappingFailed
                   ? "Mapping Failed" 
-                  : editedMapping.target_table.includes("unknown")
-                    ? "Unknown Table"
-                    : editedMapping.target_table}
+                  : editedMapping.target_table}
               </Chip>
             )}
             {importStatus !== "success" && (
@@ -216,6 +217,25 @@ export function MappingResult({
           {totalUnmapped > 0 && (
             <Chip variant="flat" size="sm" className="bg-chart-3/10 text-chart-3 font-semibold">
               {totalUnmapped} Unmapped
+            </Chip>
+          )}
+          {mapping.confidence !== undefined && (
+            <Chip 
+              variant="flat" 
+              size="sm" 
+              className={cn(
+                "font-semibold",
+                mapping.confidence >= 0.8 ? "bg-primary/10 text-primary" :
+                mapping.confidence >= 0.5 ? "bg-chart-3/10 text-chart-3" :
+                "bg-destructive/10 text-destructive"
+              )}
+            >
+              {Math.round(mapping.confidence * 100)}% Confidence
+            </Chip>
+          )}
+          {mapping.cache_hit && (
+            <Chip variant="flat" size="sm" className="bg-chart-2/10 text-chart-2 font-semibold">
+              Cache Hit
             </Chip>
           )}
         </div>
@@ -258,6 +278,12 @@ export function MappingResult({
                           variant="bordered"
                           size="sm"
                           className="max-w-[200px]"
+                          classNames={{
+                            trigger: "bg-card border-border",
+                            value: "text-foreground",
+                            listboxWrapper: "bg-card",
+                            popoverContent: "bg-card border border-border",
+                          }}
                         >
                           {[
                             <SelectItem key="unknown" textValue="-- Ignore --">-- Ignore --</SelectItem>,
@@ -275,7 +301,7 @@ export function MappingResult({
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      {getConfidenceChip(cm.confidence)}
+                      {getConfidenceChip(cm.confidence as ColumnMapping["confidence"])}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -321,7 +347,7 @@ export function MappingResult({
             </div>
           )}
 
-          {importStatus !== "success" && onImport && (
+          {importStatus !== "success" && !isMappingFailed && (
             <div className="flex justify-end">
               <Button
                 color="primary"
@@ -346,3 +372,5 @@ export function MappingResult({
     </Card>
   )
 }
+
+export default MappingResult

@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"epaccdataunifier/models"
+
+	"github.com/xuri/excelize/v2"
 )
 
 // ParseCSV reads a CSV file and returns parsed rows with headers.
@@ -83,6 +85,73 @@ func ParseCSV(reader io.Reader) (*models.ParsedFile, error) {
 	return parsed, nil
 }
 
+// ParseXLSX reads an XLSX file and returns parsed rows with headers.
+func ParseXLSX(reader io.Reader) (*models.ParsedFile, error) {
+	f, err := excelize.OpenReader(reader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open XLSX: %w", err)
+	}
+	defer f.Close()
+
+	// Use the first sheet
+	sheets := f.GetSheetList()
+	if len(sheets) == 0 {
+		return nil, fmt.Errorf("XLSX has no sheets")
+	}
+
+	rows, err := f.GetRows(sheets[0])
+	if err != nil {
+		return nil, fmt.Errorf("failed to read XLSX rows: %w", err)
+	}
+	if len(rows) == 0 {
+		return nil, fmt.Errorf("XLSX sheet is empty")
+	}
+
+	// First row is headers
+	headers := make([]string, len(rows[0]))
+	for i, h := range rows[0] {
+		headers[i] = strings.TrimSpace(h)
+	}
+
+	parsed := &models.ParsedFile{
+		Headers: headers,
+		Rows:    make([]models.ParsedRow, 0, len(rows)-1),
+	}
+
+	for rowIdx := 1; rowIdx < len(rows); rowIdx++ {
+		fields := make(map[string]string)
+		for i, header := range headers {
+			if i < len(rows[rowIdx]) {
+				fields[header] = strings.TrimSpace(rows[rowIdx][i])
+			} else {
+				fields[header] = ""
+			}
+		}
+		parsed.Rows = append(parsed.Rows, models.ParsedRow{
+			RowNumber: rowIdx,
+			Fields:    fields,
+		})
+	}
+
+	return parsed, nil
+}
+
+// ParseFile auto-detects file type and parses accordingly.
+// Supports CSV/TSV/TXT (delimited) and XLSX. Returns error for PDF.
+func ParseFile(reader io.ReadSeeker, filename string) (*models.ParsedFile, error) {
+	fileType := DetectFileType(filename)
+	switch fileType {
+	case "csv", "tsv", "txt":
+		return ParseCSV(reader)
+	case "xlsx":
+		return ParseXLSX(reader)
+	case "pdf":
+		return nil, fmt.Errorf("PDF files cannot be re-parsed for import; convert to CSV or XLSX first")
+	default:
+		return nil, fmt.Errorf("unsupported file type: %s", fileType)
+	}
+}
+
 // DetectFileType returns the type of file based on extension.
 func DetectFileType(filename string) string {
 	lower := strings.ToLower(filename)
@@ -100,4 +169,10 @@ func DetectFileType(filename string) string {
 	default:
 		return "unknown"
 	}
+}
+
+// IsDirectlyParseable returns true for formats Go's CSV parser handles.
+// XLSX and PDF are forwarded to the ML service for extraction.
+func IsDirectlyParseable(fileType string) bool {
+	return fileType == "csv" || fileType == "tsv" || fileType == "txt"
 }

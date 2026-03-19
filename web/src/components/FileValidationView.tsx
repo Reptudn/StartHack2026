@@ -126,24 +126,24 @@ export default function FileValidationView({ fileId }: FileValidationViewProps) 
                         cy="50" 
                         r="45" 
                         fill="none" 
-                        className={cn("stroke-primary transition-all duration-1000", `stroke-${getScoreColor(data.file.quality_score)}`)}
+                        className={cn("stroke-primary transition-all duration-1000", `stroke-${getScoreColor(data.file.quality_score ?? 0)}`)}
                         strokeWidth="8"
-                        strokeDasharray={`${data.file.quality_score * 2.827} 282.7`}
+                        strokeDasharray={`${(data.file.quality_score ?? 0) * 2.827} 282.7`}
                         strokeLinecap="round"
                         transform="rotate(-90 50 50)"
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className={cn("text-4xl font-bold", `text-${getScoreColor(data.file.quality_score)}`)}>
-                        {data.file.quality_score.toFixed(0)}
+                      <span className={cn("text-4xl font-bold", `text-${getScoreColor(data.file.quality_score ?? 0)}`)}>
+                        {(data.file.quality_score ?? 0).toFixed(0)}
                       </span>
                       <span className="text-[10px] uppercase font-bold text-default-400">Quality Score</span>
                     </div>
                   </div>
                   <Progress 
                     aria-label="Quality score small"
-                    value={data.file.quality_score} 
-                    color={getScoreColor(data.file.quality_score)}
+                    value={data.file.quality_score ?? 0} 
+                    color={getScoreColor(data.file.quality_score ?? 0)}
                     size="sm"
                     className="max-w-xs mt-2"
                   />
@@ -151,10 +151,10 @@ export default function FileValidationView({ fileId }: FileValidationViewProps) 
               </Card>
 
               <div className="grid grid-cols-2 gap-4">
-                <MetricCard label="Completeness" value={data.file.completeness} />
-                <MetricCard label="Accuracy" value={data.file.accuracy} />
-                <MetricCard label="Consistency" value={data.file.consistency} />
-                <MetricCard label="Timeliness" value={data.file.timeliness} />
+                <MetricCard label="Completeness" value={data.file.completeness ?? 0} />
+                <MetricCard label="Accuracy" value={data.file.accuracy ?? 0} />
+                <MetricCard label="Consistency" value={data.file.consistency ?? 0} />
+                <MetricCard label="Timeliness" value={data.file.timeliness ?? 0} />
               </div>
             </div>
 

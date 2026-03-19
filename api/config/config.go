@@ -37,10 +37,10 @@ func Load() *Config {
 		DBPassword:   getEnv("DB_PASSWORD", "healthmap_dev"),
 		DBName:       getEnv("DB_NAME", "healthmap"),
 		DBSSLMode:    getEnv("DB_SSLMODE", "disable"),
-		CORSOrigins:  strings.Split(getEnv("CORS_ORIGINS", "http://localhost:5173"), ","),
+		CORSOrigins:  splitAndTrim(getEnv("CORS_ORIGINS", "http://web:5173")),
 		UploadDir:    getEnv("UPLOAD_DIR", "./uploads"),
 		MaxUploadMB:  getEnvInt("MAX_UPLOAD_MB", 50),
-		MLServiceURL: getEnv("ML_SERVICE_URL", "http://localhost:5001"),
+		MLServiceURL: getEnv("ML_SERVICE_URL", "http://ml:5001"),
 	}
 
 	// Ensure upload directory exists
@@ -82,4 +82,21 @@ func getEnvInt(key string, fallback int64) int64 {
 		}
 	}
 	return fallback
+}
+
+func splitAndTrim(s string) []string {
+	if s == "" {
+		return []string{}
+	}
+	parts := strings.Split(s, ",")
+	var result []string
+	for _, p := range parts {
+		trimmed := strings.TrimSpace(p)
+		if trimmed != "" {
+			// Remove trailing slashes for exact Origin matching
+			trimmed = strings.TrimSuffix(trimmed, "/")
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }
