@@ -1,0 +1,32 @@
+{
+  "fixtures": [
+    {
+      "file": "synth_labs_1000_cases.csv",
+      "expected_table": "tbImportLabsData"
+    },
+    {
+      "file": "synthetic_cases_icd10_ops.csv",
+      "expected_table": "tbImportIcd10Data"
+    },
+    {
+      "file": "synthetic_device_motion_fall_data.csv",
+      "expected_table": "tbImportDeviceMotionData"
+    },
+    {
+      "file": "synthetic_device_raw_1hz_motion_fall.csv",
+      "expected_table": "tbImportDevice1HzMotionData"
+    },
+    {
+      "file": "synthetic_medication_raw_inpatient.csv",
+      "expected_table": "tbImportMedicationInpatientData"
+    },
+    {
+      "file": "synthetic_nursing_daily_reports_en.csv",
+      "expected_table": "tbImportNursingDailyReportsData"
+    },
+    {
+      "file": "epaAC-Data-1.csv",
+      "expected_table": "tbImportAcData"
+    }
+  ]
+}

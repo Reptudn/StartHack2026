@@ -14,12 +14,17 @@ func RunMigrations() error {
 		&models.FileUpload{},
 		&models.MappingCache{},
 		&models.ValidationLog{},
+		&models.TBCaseData{},
+		&models.TBImportAcData{},
+		&models.TBImportLabsData{},
+		&models.TBImportIcd10Data{},
+		&models.TBImportDeviceMotionData{},
+		&models.TBImportDevice1HzMotionData{},
+		&models.TBImportMedicationInpatientData{},
+		&models.TBImportNursingDailyReportsData{},
 	); err != nil {
 		return err
 	}
-
-	// TODO: Add models.Job when async job queue (Redis) is implemented
-	// TODO: Add models.FlaggedRecord when manual review/correction UI is built
 
 	log.Println("[database] Migrations completed")
 	return nil

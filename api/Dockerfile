@@ -29,6 +29,9 @@ WORKDIR /root/
 # Copy the binary from the builder stage
 COPY --from=builder /app/main .
 
+# Copy test fixtures
+COPY testdata/ ./testdata/
+
 # Create uploads directory
 RUN mkdir -p /data/uploads
 

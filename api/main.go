@@ -47,10 +47,12 @@ func main() {
 	r.GET("/api/health", healthCheck)
 
 	uploadHandler := handlers.NewUploadHandler(cfg)
+	testHandler := handlers.NewTestHandler(cfg)
 
 	api := r.Group("/api")
 	{
 		api.POST("/upload", uploadHandler.Upload)
+		api.POST("/test", testHandler.RunTests)
 		api.GET("/schema", handlers.GetSchema)
 		api.GET("/files", handlers.ListFiles)
 		api.GET("/files/:id", handlers.GetFile)
