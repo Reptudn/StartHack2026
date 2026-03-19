@@ -2,7 +2,6 @@
 ML Service — 4-stage pipeline: Extract → Inspect → Classify → Map
 """
 import os
-import httpx
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
