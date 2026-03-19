@@ -1,211 +1,348 @@
-import React, { useState, useEffect } from 'react'
-import type { MLMapping, SchemaTable } from '../api'
-import { getSchema, importFile } from '../api'
+"use client"
+
+import { useState } from "react"
+import { 
+  Card, 
+  CardBody, 
+  CardHeader, 
+  Button, 
+  Chip,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Select,
+  SelectItem
+} from "@heroui/react"
+import { Brain, ArrowRight, Check, Pencil, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+interface ColumnMapping {
+  file_column: string
+  db_column: string
+  confidence: "high" | "medium" | "low" | "manual"
+}
+
+interface MLMapping {
+  target_table: string
+  column_mappings: ColumnMapping[]
+  unmapped_columns: string[]
+}
+
+interface SchemaTable {
+  name: string
+  columns: string[]
+}
+
+interface FileOption {
+  id: string
+  name: string
+}
 
 interface MappingResultProps {
   mapping: MLMapping
-  filename: string
-  fileId: number
+  files: FileOption[]
+  selectedFileId: string | null
+  onFileSelect: (fileId: string) => void
+  onImport?: (fileId: string, mapping: MLMapping) => Promise<{ rows_inserted: number }>
+  schemas?: SchemaTable[]
 }
 
-export default function MappingResult({ mapping, filename, fileId }: MappingResultProps) {
+function getConfidenceChip(confidence: ColumnMapping["confidence"]) {
+  const variants = {
+    high: "bg-primary/10 text-primary",
+    manual: "bg-chart-2/10 text-chart-2",
+    medium: "bg-chart-3/10 text-chart-3",
+    low: "bg-destructive/10 text-destructive",
+  }
+
+  return (
+    <Chip variant="flat" size="sm" className={cn("capitalize font-semibold", variants[confidence])}>
+      {confidence}
+    </Chip>
+  )
+}
+
+export function MappingResult({ 
+  mapping, 
+  files,
+  selectedFileId,
+  onFileSelect,
+  onImport,
+  schemas = []
+}: MappingResultProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedMapping, setEditedMapping] = useState<MLMapping>(mapping)
-  const [schemas, setSchemas] = useState<SchemaTable[]>([])
-  
   const [isImporting, setIsImporting] = useState(false)
-  const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const [importMessage, setImportMessage] = useState('')
+  const [importStatus, setImportStatus] = useState<"idle" | "success" | "error">("idle")
+  const [importMessage, setImportMessage] = useState("")
 
-  useEffect(() => {
-    if (isEditing && schemas.length === 0) {
-      getSchema().then(setSchemas).catch((err: Error | unknown) => {
-        console.error("Failed to load schema:", err)
-      })
-    }
-  }, [isEditing, schemas.length])
-
-  const highCount = editedMapping.column_mappings.filter(m => m.confidence === 'high').length
+  const highCount = editedMapping.column_mappings.filter(
+    (m) => m.confidence === "high" || m.confidence === "manual"
+  ).length
   const totalMapped = editedMapping.column_mappings.length
   const totalUnmapped = editedMapping.unmapped_columns.length
 
-  const handleTableChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setEditedMapping(prev => ({ ...prev, target_table: e.target.value }))
+  const handleTableChange = (value: React.ChangeEvent<HTMLSelectElement>) => {
+    setEditedMapping((prev) => ({ ...prev, target_table: value.target.value }))
   }
 
   const handleColumnChange = (fileCol: string, newDbCol: string) => {
-    setEditedMapping(prev => ({
+    setEditedMapping((prev) => ({
       ...prev,
-      column_mappings: prev.column_mappings.map(cm => 
-        cm.file_column === fileCol ? { ...cm, db_column: newDbCol, confidence: 'manual' } : cm
-      )
+      column_mappings: prev.column_mappings.map((cm) =>
+        cm.file_column === fileCol
+          ? { ...cm, db_column: newDbCol, confidence: "manual" }
+          : cm
+      ),
     }))
   }
 
   const handleApprove = async () => {
+    if (!onImport || !selectedFileId) return
+    
     setIsImporting(true)
-    setImportStatus('idle')
+    setImportStatus("idle")
     try {
-      const res = await importFile(fileId, editedMapping)
-      setImportStatus('success')
+      const res = await onImport(selectedFileId, editedMapping)
+      setImportStatus("success")
       setImportMessage(`Successfully imported ${res.rows_inserted} rows!`)
       setIsEditing(false)
     } catch (err) {
-      setImportStatus('error')
-      setImportMessage(err instanceof Error ? err.message : 'Unknown error')
+      setImportStatus("error")
+      setImportMessage(err instanceof Error ? err.message : "Unknown error")
     } finally {
       setIsImporting(false)
     }
   }
 
-  const currentSchema = schemas.find(s => s.name === editedMapping.target_table)
+  const currentSchema = schemas.find((s) => s.name === editedMapping.target_table)
 
   return (
-    <div className="mapping-result">
-      <div className="mapping-header" style={{ alignItems: 'flex-start' }}>
-        <div className="mapping-title">
-          <span className="mapping-icon">🧠</span>
-          <div>
-            <h3>AI Mapping Result</h3>
-            <p className="mapping-filename">{filename}</p>
-          </div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-          {isEditing ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Target Table:</span>
-              <select 
-                value={editedMapping.target_table} 
-                onChange={handleTableChange}
-                style={{ padding: '0.3rem', borderRadius: '4px', background: 'var(--surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
-              >
-                <option value="unknown">Select a table...</option>
-                {schemas.map(s => (
-                  <option key={s.name} value={s.name}>{s.name}</option>
-                ))}
-              </select>
+    <Card className="border border-border bg-card shadow-sm rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+      <CardHeader className="pb-4 border-b border-border">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
+          <div className="space-y-3 w-full sm:w-auto">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Brain className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-lg font-bold">AI Mapping Result</p>
             </div>
-          ) : (
-            <div className="mapping-badge">
-              <span className="target-table">{editedMapping.target_table}</span>
-            </div>
-          )}
-          
-          {importStatus !== 'success' && (
-            <button 
-              onClick={() => setIsEditing(!isEditing)} 
-              className="btn-secondary"
-              style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem' }}
+            <Select 
+              aria-label="Select file"
+              placeholder="Select a file to map..."
+              selectedKeys={selectedFileId ? [selectedFileId] : []}
+              onChange={(e) => onFileSelect(e.target.value)}
+              className="max-w-[280px]"
+              variant="bordered"
+              size="sm"
+              classNames={{
+                trigger: "bg-card border-border data-[hover=true]:border-primary",
+                value: "text-foreground",
+                listboxWrapper: "bg-card",
+                popoverContent: "bg-card border border-border",
+              }}
             >
-              {isEditing ? 'Cancel Edit' : '✎ Edit Mapping'}
-            </button>
+              {files.map((file) => (
+                <SelectItem key={file.id} textValue={file.name}>
+                  {file.name}
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
+          <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
+            {isEditing ? (
+              <Select 
+                aria-label="Target table"
+                placeholder="Select table..."
+                selectedKeys={[editedMapping.target_table]}
+                onChange={handleTableChange}
+                className="w-[200px]"
+                variant="bordered"
+                size="sm"
+                classNames={{
+                  trigger: "bg-card border-border data-[hover=true]:border-primary",
+                  value: "text-foreground",
+                  listboxWrapper: "bg-card",
+                  popoverContent: "bg-card border border-border",
+                }}
+              >
+                {schemas.map((s) => (
+                  <SelectItem key={s.name} textValue={s.name}>
+                    {s.name}
+                  </SelectItem>
+                ))}
+              </Select>
+            ) : (
+              <Chip variant="flat" className={cn(
+                "font-medium",
+                (!editedMapping.target_table || editedMapping.target_table.includes("unknown") || editedMapping.target_table.includes("error"))
+                  ? "bg-destructive/10 text-destructive"
+                  : "bg-muted text-foreground"
+              )}>
+                {(!editedMapping.target_table || editedMapping.target_table.includes("error"))
+                  ? "Mapping Failed" 
+                  : editedMapping.target_table.includes("unknown")
+                    ? "Unknown Table"
+                    : editedMapping.target_table}
+              </Chip>
+            )}
+            {importStatus !== "success" && (
+              <Button
+                variant="bordered"
+                size="sm"
+                onPress={() => setIsEditing(!isEditing)}
+                startContent={<Pencil className="h-3.5 w-3.5" />}
+                className="font-medium"
+              >
+                {isEditing ? "Cancel" : "Edit Mapping"}
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardBody className="space-y-6">
+        {/* Stats */}
+        <div className="flex flex-wrap items-center gap-3">
+          <Chip variant="flat" size="sm" className="bg-primary/10 text-primary font-semibold">
+            {totalMapped} Mapped
+          </Chip>
+          <Chip variant="flat" size="sm" className="bg-chart-2/10 text-chart-2 font-semibold">
+            {highCount} High Confidence
+          </Chip>
+          {totalUnmapped > 0 && (
+            <Chip variant="flat" size="sm" className="bg-chart-3/10 text-chart-3 font-semibold">
+              {totalUnmapped} Unmapped
+            </Chip>
           )}
         </div>
-      </div>
 
-      <div className="mapping-stats">
-        <div className="stat-pill mapped">
-          <span className="stat-number">{totalMapped}</span>
-          <span className="stat-label">Mapped</span>
-        </div>
-        <div className="stat-pill high-conf">
-          <span className="stat-number">{highCount}</span>
-          <span className="stat-label">High/Manual Conf.</span>
-        </div>
-        <div className="stat-pill unmapped">
-          <span className="stat-number">{totalUnmapped}</span>
-          <span className="stat-label">Unmapped</span>
-        </div>
-      </div>
+        {/* Mapping Table */}
+        {totalMapped > 0 && (
+          <div className="overflow-x-auto rounded-xl border border-border">
+            <Table 
+              aria-label="Column Mapping Table"
+              shadow="none"
+              removeWrapper
+              classNames={{
+                th: "bg-muted/30 text-muted-foreground font-semibold text-xs uppercase tracking-wide py-4",
+                td: "py-4"
+              }}
+            >
+              <TableHeader>
+                <TableColumn>File Column</TableColumn>
+                <TableColumn className="w-12">{" "}</TableColumn>
+                <TableColumn>Database Column</TableColumn>
+                <TableColumn className="text-right">Confidence</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {editedMapping.column_mappings.map((cm, i) => (
+                  <TableRow key={i} className="border-b border-border last:border-none">
+                    <TableCell>
+                      <code className="px-2.5 py-1.5 rounded-lg bg-muted text-sm font-mono">
+                        {cm.file_column}
+                      </code>
+                    </TableCell>
+                    <TableCell>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </TableCell>
+                    <TableCell>
+                      {isEditing ? (
+                        <Select
+                          aria-label="Select database column"
+                          selectedKeys={[cm.db_column]}
+                          onChange={(e) => handleColumnChange(cm.file_column, e.target.value)}
+                          variant="bordered"
+                          size="sm"
+                          className="max-w-[200px]"
+                        >
+                          {[
+                            <SelectItem key="unknown" textValue="-- Ignore --">-- Ignore --</SelectItem>,
+                            ...(currentSchema?.columns || []).map((col) => (
+                              <SelectItem key={col} textValue={col}>
+                                {col}
+                              </SelectItem>
+                            ))
+                          ]}
+                        </Select>
+                      ) : (
+                        <code className="px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-mono">
+                          {cm.db_column}
+                        </code>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {getConfidenceChip(cm.confidence)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
-      {totalMapped > 0 && (
-        <div className="mapping-table-container">
-          <table className="mapping-table">
-            <thead>
-              <tr>
-                <th>File Column</th>
-                <th>→</th>
-                <th>Database Column</th>
-                <th>Confidence</th>
-              </tr>
-            </thead>
-            <tbody>
-              {editedMapping.column_mappings.map((cm, i) => (
-                <tr key={i}>
-                  <td className="col-file">{cm.file_column}</td>
-                  <td className="col-arrow">→</td>
-                  <td className="col-db">
-                    {isEditing ? (
-                      <select 
-                        value={cm.db_column} 
-                        onChange={(e) => handleColumnChange(cm.file_column, e.target.value)}
-                        style={{ padding: '0.2rem', width: '100%', background: 'transparent', color: 'inherit', border: '1px solid var(--border)' }}
-                      >
-                        <option value="unknown">-- Ignore --</option>
-                        {currentSchema?.columns.map((col: string) => (
-                          <option key={col} value={col}>{col}</option>
-                        ))}
-                        {/* If the current db_column is not in the schema (e.g. AI hallucinated it), still show it so it doesn't break */}
-                        {cm.db_column !== 'unknown' && !currentSchema?.columns.includes(cm.db_column) && (
-                           <option value={cm.db_column}>{cm.db_column} (Unknown)</option>
-                        )}
-                      </select>
-                    ) : (
-                      cm.db_column
-                    )}
-                  </td>
-                  <td>
-                    <span className={`confidence-badge ${cm.confidence}`}>
-                      {cm.confidence}
-                    </span>
-                  </td>
-                </tr>
+        {/* Unmapped Columns */}
+        {totalUnmapped > 0 && (
+          <div className="space-y-3 p-4 rounded-xl bg-chart-3/5 border border-chart-3/20">
+            <div className="flex items-center gap-2 text-chart-3">
+              <AlertCircle className="h-4 w-4" />
+              <span className="font-semibold text-sm">Unmapped Columns</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {editedMapping.unmapped_columns.map((col, i) => (
+                <Chip key={i} variant="flat" size="sm" className="bg-chart-3/10 text-chart-3 font-medium">
+                  {col}
+                </Chip>
               ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {totalUnmapped > 0 && (
-        <div className="unmapped-section">
-          <h4>⚠️ Unmapped Columns {isEditing && <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>(Cannot be edited currently)</span>}</h4>
-          <div className="unmapped-chips">
-            {editedMapping.unmapped_columns.map((col, i) => (
-              <span key={i} className="unmapped-chip">{col}</span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {importMessage && (
-          <div style={{ padding: '0.75rem', borderRadius: '6px', background: importStatus === 'success' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)', color: importStatus === 'success' ? '#4caf50' : '#f44336' }}>
-            {importStatus === 'success' ? '✅ ' : '❌ '} {importMessage}
+            </div>
           </div>
         )}
-        
-        {importStatus !== 'success' && (
-          <button 
-            onClick={handleApprove} 
-            disabled={isImporting}
-            style={{
-              padding: '0.75rem 1.5rem',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: isImporting ? 'wait' : 'pointer',
-              fontWeight: 600,
-              fontSize: '1rem',
-              alignSelf: 'flex-end',
-              opacity: isImporting ? 0.7 : 1,
-              transition: 'all 0.2s ease'
-            }}
-          >
-            {isImporting ? 'Importing Data...' : '✅ Approve & Import Data'}
-          </button>
-        )}
-      </div>
-    </div>
+
+        {/* Import Status & Button */}
+        <div className="pt-4 border-t border-border space-y-4">
+          {importMessage && (
+            <div
+              className={cn(
+                "flex items-center gap-3 p-4 rounded-xl animate-in fade-in slide-in-from-bottom-2 duration-300",
+                importStatus === "success"
+                  ? "bg-primary/10 text-primary border border-primary/20"
+                  : "bg-destructive/10 text-destructive border border-destructive/20"
+              )}
+            >
+              {importStatus === "success" ? (
+                <CheckCircle className="h-5 w-5" />
+              ) : (
+                <AlertCircle className="h-5 w-5" />
+              )}
+              <span className="font-semibold">{importMessage}</span>
+            </div>
+          )}
+
+          {importStatus !== "success" && onImport && (
+            <div className="flex justify-end">
+              <Button
+                color="primary"
+                onPress={handleApprove}
+                isDisabled={isImporting}
+                className="font-semibold gap-2"
+                startContent={!isImporting && <Check className="h-4 w-4" />}
+              >
+                {isImporting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Importing...
+                  </>
+                ) : (
+                  "Approve & Import"
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardBody>
+    </Card>
   )
 }

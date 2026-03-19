@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"epaccdataunifier/config"
 	"epaccdataunifier/database"
@@ -25,6 +26,11 @@ type UploadHandler struct {
 
 func NewUploadHandler(cfg *config.Config) *UploadHandler {
 	return &UploadHandler{Config: cfg}
+}
+
+// updateFileStep updates the processing step for a file
+func updateFileStep(fileID int64, step string) {
+	database.DB.Model(&models.FileUpload{}).Where("id = ?", fileID).Update("processing_step", step)
 }
 
 // Upload handles POST /api/upload
@@ -63,10 +69,33 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 			return
 		}
 
+		// Create initial file record with "extracting" step
+		fileUpload := models.FileUpload{
+			Filename:       fileHeader.Filename,
+			FileType:       fileType,
+			FileSizeBytes:  fileHeader.Size,
+			Status:         "processing",
+			ProcessingStep: models.StepExtracting,
+			RowCount:       0,
+			ColumnsMapped:  []string{},
+			MappingResult:  "{}",
+		}
+
+		if err := database.DB.Create(&fileUpload).Error; err != nil {
+			log.Printf("[upload] Failed to create file record: %v", err)
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to store file record"})
+			return
+		}
+
+		// Small delay to show extracting step in UI
+		time.Sleep(500 * time.Millisecond)
+
 		// Save file to disk
 		savedPath := filepath.Join(h.Config.UploadDir, uuid.New().String()+"_"+fileHeader.Filename)
 		src, err := fileHeader.Open()
 		if err != nil {
+			updateFileStep(fileUpload.ID, models.StepFailed)
+			database.DB.Model(&fileUpload).Update("status", "failed")
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to open uploaded file"})
 			return
 		}
@@ -74,21 +103,31 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 
 		dst, err := os.Create(savedPath)
 		if err != nil {
+			updateFileStep(fileUpload.ID, models.StepFailed)
+			database.DB.Model(&fileUpload).Update("status", "failed")
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to save file"})
 			return
 		}
 		defer dst.Close()
 
 		if _, err = io.Copy(dst, src); err != nil {
+			updateFileStep(fileUpload.ID, models.StepFailed)
+			database.DB.Model(&fileUpload).Update("status", "failed")
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to write file"})
 			return
 		}
+
+		// Update to inspecting step
+		updateFileStep(fileUpload.ID, models.StepInspecting)
+		time.Sleep(500 * time.Millisecond)
 
 		// Parse headers + sample rows
 		var parsed *models.ParsedFile
 		if fileType == "csv" || fileType == "tsv" || fileType == "txt" {
 			f, err := os.Open(savedPath)
 			if err != nil {
+				updateFileStep(fileUpload.ID, models.StepFailed)
+				database.DB.Model(&fileUpload).Update("status", "failed")
 				c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to read saved file"})
 				return
 			}
@@ -96,6 +135,8 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 
 			parsed, err = parser.ParseCSV(f)
 			if err != nil {
+				updateFileStep(fileUpload.ID, models.StepFailed)
+				database.DB.Model(&fileUpload).Update("status", "failed")
 				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Failed to parse file: " + err.Error()})
 				return
 			}
@@ -105,6 +146,10 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 				Rows:    []models.ParsedRow{},
 			}
 		}
+
+		// Update to classifying step
+		updateFileStep(fileUpload.ID, models.StepClassifying)
+		time.Sleep(500 * time.Millisecond)
 
 		sample20 := c.PostForm("sample20") == "true"
 		
@@ -130,6 +175,9 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 			}
 			sampleRows = append(sampleRows, rowValues)
 		}
+
+		// Update to mapping step
+		updateFileStep(fileUpload.ID, models.StepMapping)
 
 		var mapping *models.MLMapping
 		mappingJSON := "{}"
@@ -166,22 +214,24 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 			}
 		}
 
-		fileUpload := models.FileUpload{
-			Filename:      fileHeader.Filename,
-			FileType:      fileType,
-			FileSizeBytes: fileHeader.Size,
-			Status:        status,
-			RowCount:      len(parsed.Rows),
-			ColumnsMapped: parsed.Headers,
-			MappingResult: mappingJSON,
-			SavedPath:     savedPath,
+		// Update final status
+		finalStep := models.StepCompleted
+		if status == "error" {
+			finalStep = models.StepFailed
 		}
 
-		if err := database.DB.Create(&fileUpload).Error; err != nil {
-			log.Printf("[upload] Failed to insert file record: %v", err)
-			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to store file record"})
-			return
-		}
+		// Update file record with final data
+		database.DB.Model(&fileUpload).Updates(map[string]interface{}{
+			"status":          status,
+			"processing_step": finalStep,
+			"row_count":       len(parsed.Rows),
+			"columns_mapped":  parsed.Headers,
+			"mapping_result":  mappingJSON,
+			"saved_path":      savedPath,
+		})
+
+		// Reload the updated file
+		database.DB.First(&fileUpload, fileUpload.ID)
 
 		results = append(results, models.UploadResponse{
 			File:    fileUpload,

@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './components/Landing';
 import Dashboard from './components/Dashboard';
-import './App.css';
 
 export default function App() {
   return (

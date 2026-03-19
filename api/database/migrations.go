@@ -11,7 +11,7 @@ func RunMigrations() error {
 	DB.Exec(`ALTER TABLE file_uploads DROP COLUMN IF EXISTS columns_mapped`)
 
 	// AutoMigrate handles both creating new tables AND adding missing columns
-	if err := DB.AutoMigrate(&models.FileUpload{}); err != nil {
+	if err := DB.AutoMigrate(&models.FileUpload{}, &models.ValidationError{}); err != nil {
 		return err
 	}
 

@@ -54,6 +54,9 @@ func main() {
 		api.GET("/schema", handlers.GetSchema)
 		api.GET("/files", handlers.ListFiles)
 		api.GET("/files/:id", handlers.GetFile)
+		api.GET("/files/:id/progress", handlers.GetFileProgress)
+		api.GET("/files/:id/validation", handlers.GetFileValidation)
+		api.POST("/validation/:id/resolve", handlers.ResolveValidationError)
 		api.POST("/files/:id/import", handlers.Import)
 		api.DELETE("/files/:id", handlers.DeleteFile)
 	}

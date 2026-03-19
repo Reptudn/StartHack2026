@@ -1,11 +1,14 @@
-const API_URL = import.meta.env.VITE_API_URL || '__VITE_API_URL_PLACEHOLDER__'
+let API_URL = '__VITE_API_URL_PLACEHOLDER__';
+if (API_URL.includes('PLACEHOLDER')) {
+  API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+}
 
 // ========== Types ==========
 
 export interface ColumnMapping {
   file_column: string
   db_column: string
-  confidence: string
+  confidence: 'manual' | 'high' | 'medium' | 'low'
 }
 
 export interface MLMapping {
@@ -21,9 +24,36 @@ export interface ApiFile {
   file_size_bytes: number
   uploaded_at: string
   status: string
+  processing_step: 'extracting' | 'inspecting' | 'classifying' | 'mapping' | 'completed' | 'failed'
   row_count: number
   columns_mapped: string[]
   mapping_result: string
+  
+  // Quality Metrics
+  quality_score: number
+  completeness: number
+  accuracy: number
+  consistency: number
+  timeliness: number
+  error_count: number
+}
+
+export interface ValidationError {
+  id: number
+  file_id: number
+  row_number: number
+  column_name: string
+  error_type: string
+  severity: 'error' | 'warning' | 'info'
+  original_value: string
+  suggested_value: string
+  manual_value: string
+  resolved: string
+}
+
+export interface ValidationResponse {
+  file: ApiFile
+  errors: ValidationError[]
 }
 
 export interface ApiUploadResponse {
@@ -57,11 +87,39 @@ export async function getFiles(): Promise<ApiFile[]> {
   return res.json()
 }
 
+export interface FileProgress {
+  id: number
+  status: string
+  processing_step: 'extracting' | 'inspecting' | 'classifying' | 'mapping' | 'completed' | 'failed'
+}
+
+export async function getFileProgress(fileId: number): Promise<FileProgress> {
+  const res = await fetch(`${API_URL}/api/files/${fileId}/progress`)
+  if (!res.ok) throw new Error('Failed to fetch file progress')
+  return res.json()
+}
+
 export async function deleteFile(fileId: number): Promise<void> {
   const res = await fetch(`${API_URL}/api/files/${fileId}`, {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error('Failed to delete file')
+}
+
+export async function getFileValidation(fileId: number): Promise<ValidationResponse> {
+  const res = await fetch(`${API_URL}/api/files/${fileId}/validation`)
+  if (!res.ok) throw new Error('Failed to fetch validation data')
+  return res.json()
+}
+
+export async function resolveValidationError(errorId: number, status: string, manualValue?: string): Promise<ValidationError> {
+  const res = await fetch(`${API_URL}/api/validation/${errorId}/resolve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status, manual_value: manualValue })
+  })
+  if (!res.ok) throw new Error('Failed to resolve validation error')
+  return res.json()
 }
 
 export async function healthCheck(): Promise<boolean> {
