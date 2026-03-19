@@ -8,11 +8,18 @@ class ColumnProfile(BaseModel):
     sample_values: list[str]
 
 
+class AnomalyFlag(BaseModel):
+    column: str
+    severity: str  # "warning" | "info"
+    message: str
+
+
 class FileProfile(BaseModel):
     filename: str
     format: str
     row_count: int
     columns: list[ColumnProfile]
+    anomalies: list[AnomalyFlag] = []
 
 
 class ClassifyResult(BaseModel):
@@ -42,3 +49,5 @@ class ProcessResponse(BaseModel):
     row_count: int
     low_confidence: bool
     cache_hit: bool
+    profile: FileProfile | None = None
+    anomalies: list[AnomalyFlag] = []

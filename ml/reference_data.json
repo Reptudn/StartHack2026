@@ -1,0 +1,3142 @@
+{
+  "tbCaseData": {
+    "columns": [
+      {
+        "name": "coId",
+        "type": "bigint"
+      },
+      {
+        "name": "coE2I222",
+        "type": "bigint"
+      },
+      {
+        "name": "coPatientId",
+        "type": "bigint"
+      },
+      {
+        "name": "coE2I223",
+        "type": "datetime"
+      },
+      {
+        "name": "coE2I228",
+        "type": "datetime"
+      },
+      {
+        "name": "coLastname",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coFirstname",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coGender",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coDateOfBirth",
+        "type": "datetime"
+      },
+      {
+        "name": "coAgeYears",
+        "type": "int"
+      },
+      {
+        "name": "coTypeOfStay",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coIcd",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coDrgName",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coRecliningType",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coState",
+        "type": "nvarchar"
+      }
+    ],
+    "row_count": 3,
+    "sample_rows": [
+      {
+        "coE2I222": "4000",
+        "coPatientId": "204000",
+        "coE2I223": "Feb  8 2026 12:00AM",
+        "coE2I228": "Feb 11 2026 12:00AM",
+        "coLastname": null,
+        "coFirstname": null,
+        "coGender": "F",
+        "coDateOfBirth": null,
+        "coAgeYears": "58",
+        "coTypeOfStay": null,
+        "coIcd": "K92.2",
+        "coDrgName": null,
+        "coRecliningType": null,
+        "coState": null
+      },
+      {
+        "coE2I222": "6000",
+        "coPatientId": "306000",
+        "coE2I223": "Feb  2 2026 12:00AM",
+        "coE2I228": "Feb 20 2026 12:00AM",
+        "coLastname": null,
+        "coFirstname": null,
+        "coGender": "M",
+        "coDateOfBirth": null,
+        "coAgeYears": "38",
+        "coTypeOfStay": null,
+        "coIcd": "J96.0",
+        "coDrgName": null,
+        "coRecliningType": null,
+        "coState": null
+      },
+      {
+        "coE2I222": "2300",
+        "coPatientId": "102300",
+        "coE2I223": "Jan 20 2026 12:00AM",
+        "coE2I228": "Jan 26 2026 12:00AM",
+        "coLastname": null,
+        "coFirstname": null,
+        "coGender": "M",
+        "coDateOfBirth": null,
+        "coAgeYears": "73",
+        "coTypeOfStay": null,
+        "coIcd": "I50.1",
+        "coDrgName": null,
+        "coRecliningType": null,
+        "coState": null
+      }
+    ]
+  },
+  "tbImportAcData": {
+    "columns": [
+      {
+        "name": "coId",
+        "type": "bigint"
+      },
+      {
+        "name": "coCaseId",
+        "type": "bigint"
+      },
+      {
+        "name": "coE0I001",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I002",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I003",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I004",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I005",
+        "type": "numeric"
+      },
+      {
+        "name": "coE0I007",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I008",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I009",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I010",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I011",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I012",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I013",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I014",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I015",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I021",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I043",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I070",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I074",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I075",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I076",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I077",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I078",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I079",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I081",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I082",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I083",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0116",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0122",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0134",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0141",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0150",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0163",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0168",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0173",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0178",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0190",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0241",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0262",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0266",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0270",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0276",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0004",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE0I0071",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0077",
+        "type": "smallint"
+      },
+      {
+        "name": "coE0I0081",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I001",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I002",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I003",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I004",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I005",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I006",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I007",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I008",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I009",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I010",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I011",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I012",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I013",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I014",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I015",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I017",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I018",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I019",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I020",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I021",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I022",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I023",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I024",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I025",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I026",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I027",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I028",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I029",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I030",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I031",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I032",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I033",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I034",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I035",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I036",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I037",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I038",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I039",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I040",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I041",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I042",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I043",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I044",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I045",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I046",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I047",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I048",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I049",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I050",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I051",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I052",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I053",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I054",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I055",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I056",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I057",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I058",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I059",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I060",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I061",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I062",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I063",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I064",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I065",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I066",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I067",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I068",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I069",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I070",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I071",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I072",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I073",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I074",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I075",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I076",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I077",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I078",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I079",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I080",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I081",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I082",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I083",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I084",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I085",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I086",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I087",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I088",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I089",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I090",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I091",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I092",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I093",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I095",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I094",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I096",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I097",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I098",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I099",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I100",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I101",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I102",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I103",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I104",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I105",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I106",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I107",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I108",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I109",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I110",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I111",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I112",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I113",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I114",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I115",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I116",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I117",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I118",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I119",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I121",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I122",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I123",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I124",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I125",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I126",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I127",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I128",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I129",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I130",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I131",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I132",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I133",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I134",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I135",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I136",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I137",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I138",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I139",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I140",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I141",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I142",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I143",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I144",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I145",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I146",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I147",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I148",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I150",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I151",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I152",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I154",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I155",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I156",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I157",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I158",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I159",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I160",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I161",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I162",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I163",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I164",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I165",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I166",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I167",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I168",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I169",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I170",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I171",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I172",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I173",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I178",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I179",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I217",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I218",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I220",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I221",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I222",
+        "type": "bigint"
+      },
+      {
+        "name": "coE2I223",
+        "type": "datetime"
+      },
+      {
+        "name": "coE2I224",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I225",
+        "type": "datetime"
+      },
+      {
+        "name": "coE2I226",
+        "type": "bigint"
+      },
+      {
+        "name": "coE2I227",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I228",
+        "type": "datetime"
+      },
+      {
+        "name": "coE2I229",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I230",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I231",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I232",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coE2I2000",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2013",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2022",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2029",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2033",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2092",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2099",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2126",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2134",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2148",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2154",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2157",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2165",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2170",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2175",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2180",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2188",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2191",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2195",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2199",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2203",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2207",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2211",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2216",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2222",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2256",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2267",
+        "type": "smallint"
+      },
+      {
+        "name": "coE2I2279",
+        "type": "smallint"
+      },
+      {
+        "name": "coMaxDekuGrad",
+        "type": "smallint"
+      },
+      {
+        "name": "coDekubitusWertTotal",
+        "type": "smallint"
+      },
+      {
+        "name": "coLastAssessment",
+        "type": "smallint"
+      },
+      {
+        "name": "coE3I0889",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coCaseIdAlpha",
+        "type": "nvarchar"
+      }
+    ],
+    "row_count": 3,
+    "sample_rows": [
+      {
+        "coCaseId": "4000",
+        "coE0I001": "4",
+        "coE0I002": "1",
+        "coE0I003": "1",
+        "coE0I004": "9",
+        "coE0I005": "23.600",
+        "coE0I007": null,
+        "coE0I008": "0",
+        "coE0I009": "4",
+        "coE0I010": null,
+        "coE0I011": null,
+        "coE0I012": null,
+        "coE0I013": null,
+        "coE0I014": "70",
+        "coE0I015": "178",
+        "coE0I021": "58",
+        "coE0I043": null,
+        "coE0I070": null,
+        "coE0I074": "4",
+        "coE0I075": null,
+        "coE0I076": null,
+        "coE0I077": null,
+        "coE0I078": null,
+        "coE0I079": null,
+        "coE0I081": null,
+        "coE0I082": null,
+        "coE0I083": null,
+        "coE0I0116": null,
+        "coE0I0122": null,
+        "coE0I0134": null,
+        "coE0I0141": null,
+        "coE0I0150": null,
+        "coE0I0163": null,
+        "coE0I0168": null,
+        "coE0I0173": null,
+        "coE0I0178": null,
+        "coE0I0190": null,
+        "coE0I0241": null,
+        "coE0I0262": null,
+        "coE0I0266": null,
+        "coE0I0270": null,
+        "coE0I0276": null,
+        "coE0I0004": null,
+        "coE0I0071": null,
+        "coE0I0077": null,
+        "coE0I0081": null,
+        "coE2I001": null,
+        "coE2I002": null,
+        "coE2I003": null,
+        "coE2I004": null,
+        "coE2I005": null,
+        "coE2I006": null,
+        "coE2I007": null,
+        "coE2I008": null,
+        "coE2I009": null,
+        "coE2I010": null,
+        "coE2I011": null,
+        "coE2I012": null,
+        "coE2I013": null,
+        "coE2I014": null,
+        "coE2I015": null,
+        "coE2I017": null,
+        "coE2I018": null,
+        "coE2I019": null,
+        "coE2I020": null,
+        "coE2I021": null,
+        "coE2I022": null,
+        "coE2I023": null,
+        "coE2I024": null,
+        "coE2I025": null,
+        "coE2I026": null,
+        "coE2I027": null,
+        "coE2I028": null,
+        "coE2I029": null,
+        "coE2I030": null,
+        "coE2I031": null,
+        "coE2I032": null,
+        "coE2I033": null,
+        "coE2I034": null,
+        "coE2I035": null,
+        "coE2I036": null,
+        "coE2I037": null,
+        "coE2I038": null,
+        "coE2I039": null,
+        "coE2I040": null,
+        "coE2I041": null,
+        "coE2I042": null,
+        "coE2I043": null,
+        "coE2I044": null,
+        "coE2I045": null,
+        "coE2I046": null,
+        "coE2I047": null,
+        "coE2I048": null,
+        "coE2I049": null,
+        "coE2I050": null,
+        "coE2I051": null,
+        "coE2I052": null,
+        "coE2I053": null,
+        "coE2I054": null,
+        "coE2I055": null,
+        "coE2I056": null,
+        "coE2I057": null,
+        "coE2I058": null,
+        "coE2I059": null,
+        "coE2I060": null,
+        "coE2I061": null,
+        "coE2I062": null,
+        "coE2I063": null,
+        "coE2I064": null,
+        "coE2I065": null,
+        "coE2I066": null,
+        "coE2I067": null,
+        "coE2I068": null,
+        "coE2I069": null,
+        "coE2I070": null,
+        "coE2I071": null,
+        "coE2I072": null,
+        "coE2I073": null,
+        "coE2I074": null,
+        "coE2I075": null,
+        "coE2I076": null,
+        "coE2I077": null,
+        "coE2I078": null,
+        "coE2I079": null,
+        "coE2I080": null,
+        "coE2I081": null,
+        "coE2I082": null,
+        "coE2I083": null,
+        "coE2I084": null,
+        "coE2I085": null,
+        "coE2I086": null,
+        "coE2I087": null,
+        "coE2I088": null,
+        "coE2I089": null,
+        "coE2I090": null,
+        "coE2I091": null,
+        "coE2I092": null,
+        "coE2I093": null,
+        "coE2I095": null,
+        "coE2I094": null,
+        "coE2I096": null,
+        "coE2I097": null,
+        "coE2I098": null,
+        "coE2I099": null,
+        "coE2I100": null,
+        "coE2I101": null,
+        "coE2I102": null,
+        "coE2I103": null,
+        "coE2I104": null,
+        "coE2I105": null,
+        "coE2I106": null,
+        "coE2I107": null,
+        "coE2I108": null,
+        "coE2I109": null,
+        "coE2I110": null,
+        "coE2I111": null,
+        "coE2I112": null,
+        "coE2I113": null,
+        "coE2I114": null,
+        "coE2I115": null,
+        "coE2I116": null,
+        "coE2I117": null,
+        "coE2I118": null,
+        "coE2I119": null,
+        "coE2I121": null,
+        "coE2I122": null,
+        "coE2I123": null,
+        "coE2I124": null,
+        "coE2I125": null,
+        "coE2I126": null,
+        "coE2I127": null,
+        "coE2I128": null,
+        "coE2I129": null,
+        "coE2I130": null,
+        "coE2I131": null,
+        "coE2I132": null,
+        "coE2I133": null,
+        "coE2I134": null,
+        "coE2I135": null,
+        "coE2I136": null,
+        "coE2I137": null,
+        "coE2I138": null,
+        "coE2I139": null,
+        "coE2I140": null,
+        "coE2I141": null,
+        "coE2I142": null,
+        "coE2I143": null,
+        "coE2I144": null,
+        "coE2I145": null,
+        "coE2I146": null,
+        "coE2I147": null,
+        "coE2I148": null,
+        "coE2I150": null,
+        "coE2I151": null,
+        "coE2I152": null,
+        "coE2I154": null,
+        "coE2I155": null,
+        "coE2I156": null,
+        "coE2I157": null,
+        "coE2I158": null,
+        "coE2I159": null,
+        "coE2I160": null,
+        "coE2I161": null,
+        "coE2I162": null,
+        "coE2I163": null,
+        "coE2I164": null,
+        "coE2I165": null,
+        "coE2I166": null,
+        "coE2I167": null,
+        "coE2I168": null,
+        "coE2I169": null,
+        "coE2I170": null,
+        "coE2I171": null,
+        "coE2I172": null,
+        "coE2I173": null,
+        "coE2I178": null,
+        "coE2I179": null,
+        "coE2I217": null,
+        "coE2I218": null,
+        "coE2I220": null,
+        "coE2I221": null,
+        "coE2I222": "4000",
+        "coE2I223": "Jan 25 2026  7:02AM",
+        "coE2I224": null,
+        "coE2I225": "Feb  9 2026  1:02PM",
+        "coE2I226": null,
+        "coE2I227": null,
+        "coE2I228": null,
+        "coE2I229": null,
+        "coE2I230": null,
+        "coE2I231": null,
+        "coE2I232": null,
+        "coE2I2000": null,
+        "coE2I2013": null,
+        "coE2I2022": null,
+        "coE2I2029": null,
+        "coE2I2033": null,
+        "coE2I2092": null,
+        "coE2I2099": null,
+        "coE2I2126": null,
+        "coE2I2134": null,
+        "coE2I2148": null,
+        "coE2I2154": null,
+        "coE2I2157": null,
+        "coE2I2165": null,
+        "coE2I2170": null,
+        "coE2I2175": null,
+        "coE2I2180": null,
+        "coE2I2188": null,
+        "coE2I2191": null,
+        "coE2I2195": null,
+        "coE2I2199": null,
+        "coE2I2203": null,
+        "coE2I2207": null,
+        "coE2I2211": null,
+        "coE2I2216": null,
+        "coE2I2222": null,
+        "coE2I2256": null,
+        "coE2I2267": null,
+        "coE2I2279": null,
+        "coMaxDekuGrad": null,
+        "coDekubitusWertTotal": null,
+        "coLastAssessment": null,
+        "coE3I0889": null,
+        "coCaseIdAlpha": null
+      },
+      {
+        "coCaseId": "2300",
+        "coE0I001": "1",
+        "coE0I002": null,
+        "coE0I003": "4",
+        "coE0I004": "0",
+        "coE0I005": "36.500",
+        "coE0I007": null,
+        "coE0I008": null,
+        "coE0I009": null,
+        "coE0I010": null,
+        "coE0I011": null,
+        "coE0I012": null,
+        "coE0I013": null,
+        "coE0I014": "103",
+        "coE0I015": "168",
+        "coE0I021": "55",
+        "coE0I043": "23",
+        "coE0I070": null,
+        "coE0I074": "4",
+        "coE0I075": "40",
+        "coE0I076": "4",
+        "coE0I077": null,
+        "coE0I078": null,
+        "coE0I079": null,
+        "coE0I081": "4",
+        "coE0I082": "4",
+        "coE0I083": "4",
+        "coE0I0116": "0",
+        "coE0I0122": "0",
+        "coE0I0134": "0",
+        "coE0I0141": "4",
+        "coE0I0150": "4",
+        "coE0I0163": "4",
+        "coE0I0168": "4",
+        "coE0I0173": "4",
+        "coE0I0178": null,
+        "coE0I0190": "4",
+        "coE0I0241": "0",
+        "coE0I0262": "2",
+        "coE0I0266": "4",
+        "coE0I0270": "4",
+        "coE0I0276": "4",
+        "coE0I0004": null,
+        "coE0I0071": "4",
+        "coE0I0077": null,
+        "coE0I0081": "4",
+        "coE2I001": "4",
+        "coE2I002": null,
+        "coE2I003": "3",
+        "coE2I004": "4",
+        "coE2I005": "1",
+        "coE2I006": null,
+        "coE2I007": null,
+        "coE2I008": "4",
+        "coE2I009": "4",
+        "coE2I010": "4",
+        "coE2I011": "4",
+        "coE2I012": "4",
+        "coE2I013": "4",
+        "coE2I014": "4",
+        "coE2I015": "4",
+        "coE2I017": "4",
+        "coE2I018": null,
+        "coE2I019": null,
+        "coE2I020": null,
+        "coE2I021": null,
+        "coE2I022": "4",
+        "coE2I023": null,
+        "coE2I024": "4",
+        "coE2I025": "4",
+        "coE2I026": "4",
+        "coE2I027": "4",
+        "coE2I028": "4",
+        "coE2I029": "4",
+        "coE2I030": "4",
+        "coE2I031": "4",
+        "coE2I032": "4",
+        "coE2I033": "4",
+        "coE2I034": null,
+        "coE2I035": null,
+        "coE2I036": null,
+        "coE2I037": null,
+        "coE2I038": null,
+        "coE2I039": null,
+        "coE2I040": null,
+        "coE2I041": "1",
+        "coE2I042": "1",
+        "coE2I043": "4",
+        "coE2I044": "4",
+        "coE2I045": "4",
+        "coE2I046": null,
+        "coE2I047": null,
+        "coE2I048": "4",
+        "coE2I049": null,
+        "coE2I050": "4",
+        "coE2I051": null,
+        "coE2I052": null,
+        "coE2I053": "4",
+        "coE2I054": "4",
+        "coE2I055": "0",
+        "coE2I056": null,
+        "coE2I057": "44",
+        "coE2I058": "0",
+        "coE2I059": "4",
+        "coE2I060": "4",
+        "coE2I061": "4",
+        "coE2I062": "4",
+        "coE2I063": "4",
+        "coE2I064": "4",
+        "coE2I065": "4",
+        "coE2I066": "4",
+        "coE2I067": "4",
+        "coE2I068": "4",
+        "coE2I069": "4",
+        "coE2I070": "44",
+        "coE2I071": "44",
+        "coE2I072": null,
+        "coE2I073": "4",
+        "coE2I074": null,
+        "coE2I075": "3",
+        "coE2I076": "4",
+        "coE2I077": "2",
+        "coE2I078": "2",
+        "coE2I079": "4",
+        "coE2I080": "3",
+        "coE2I081": "2",
+        "coE2I082": "4",
+        "coE2I083": "3",
+        "coE2I084": "4",
+        "coE2I085": "4",
+        "coE2I086": "2",
+        "coE2I087": "2",
+        "coE2I088": "4",
+        "coE2I089": null,
+        "coE2I090": null,
+        "coE2I091": null,
+        "coE2I092": null,
+        "coE2I093": null,
+        "coE2I095": "5",
+        "coE2I094": null,
+        "coE2I096": null,
+        "coE2I097": null,
+        "coE2I098": null,
+        "coE2I099": null,
+        "coE2I100": null,
+        "coE2I101": null,
+        "coE2I102": null,
+        "coE2I103": null,
+        "coE2I104": null,
+        "coE2I105": null,
+        "coE2I106": null,
+        "coE2I107": null,
+        "coE2I108": null,
+        "coE2I109": null,
+        "coE2I110": null,
+        "coE2I111": null,
+        "coE2I112": null,
+        "coE2I113": null,
+        "coE2I114": null,
+        "coE2I115": null,
+        "coE2I116": "2",
+        "coE2I117": "4",
+        "coE2I118": "9",
+        "coE2I119": null,
+        "coE2I121": null,
+        "coE2I122": null,
+        "coE2I123": "2",
+        "coE2I124": "3",
+        "coE2I125": "9",
+        "coE2I126": "4",
+        "coE2I127": "4",
+        "coE2I128": "3",
+        "coE2I129": "2",
+        "coE2I130": "2",
+        "coE2I131": "3",
+        "coE2I132": "0",
+        "coE2I133": "4",
+        "coE2I134": "3",
+        "coE2I135": "3",
+        "coE2I136": "4",
+        "coE2I137": "9",
+        "coE2I138": "3",
+        "coE2I139": "4",
+        "coE2I140": "4",
+        "coE2I141": "4",
+        "coE2I142": "4",
+        "coE2I143": "1",
+        "coE2I144": null,
+        "coE2I145": null,
+        "coE2I146": "4",
+        "coE2I147": "4",
+        "coE2I148": "3",
+        "coE2I150": null,
+        "coE2I151": "4",
+        "coE2I152": null,
+        "coE2I154": null,
+        "coE2I155": "4",
+        "coE2I156": "2",
+        "coE2I157": "4",
+        "coE2I158": "4",
+        "coE2I159": "4",
+        "coE2I160": "4",
+        "coE2I161": "3",
+        "coE2I162": "4",
+        "coE2I163": "4",
+        "coE2I164": "4",
+        "coE2I165": "1",
+        "coE2I166": null,
+        "coE2I167": "4",
+        "coE2I168": "4",
+        "coE2I169": "4",
+        "coE2I170": "3",
+        "coE2I171": "4",
+        "coE2I172": "4",
+        "coE2I173": "4",
+        "coE2I178": "4",
+        "coE2I179": "3",
+        "coE2I217": null,
+        "coE2I218": null,
+        "coE2I220": "4",
+        "coE2I221": null,
+        "coE2I222": "2300",
+        "coE2I223": "Feb 24 2026 12:00AM",
+        "coE2I224": null,
+        "coE2I225": "Feb 20 2026 12:00AM",
+        "coE2I226": "22870",
+        "coE2I227": null,
+        "coE2I228": null,
+        "coE2I229": null,
+        "coE2I230": null,
+        "coE2I231": "epaAC 2.4.00",
+        "coE2I232": null,
+        "coE2I2000": null,
+        "coE2I2013": null,
+        "coE2I2022": null,
+        "coE2I2029": "4",
+        "coE2I2033": "4",
+        "coE2I2092": "42",
+        "coE2I2099": "4",
+        "coE2I2126": "4",
+        "coE2I2134": null,
+        "coE2I2148": null,
+        "coE2I2154": null,
+        "coE2I2157": null,
+        "coE2I2165": null,
+        "coE2I2170": null,
+        "coE2I2175": null,
+        "coE2I2180": null,
+        "coE2I2188": null,
+        "coE2I2191": null,
+        "coE2I2195": null,
+        "coE2I2199": null,
+        "coE2I2203": null,
+        "coE2I2207": null,
+        "coE2I2211": null,
+        "coE2I2216": null,
+        "coE2I2222": "4",
+        "coE2I2256": null,
+        "coE2I2267": null,
+        "coE2I2279": null,
+        "coMaxDekuGrad": null,
+        "coDekubitusWertTotal": null,
+        "coLastAssessment": null,
+        "coE3I0889": null,
+        "coCaseIdAlpha": null
+      },
+      {
+        "coCaseId": "6000",
+        "coE0I001": "4",
+        "coE0I002": "1",
+        "coE0I003": "1",
+        "coE0I004": "1",
+        "coE0I005": null,
+        "coE0I007": null,
+        "coE0I008": "0",
+        "coE0I009": "4",
+        "coE0I010": null,
+        "coE0I011": "4",
+        "coE0I012": "4",
+        "coE0I013": "4",
+        "coE0I014": "0",
+        "coE0I015": "0",
+        "coE0I021": null,
+        "coE0I043": null,
+        "coE0I070": null,
+        "coE0I074": "4",
+        "coE0I075": null,
+        "coE0I076": "4",
+        "coE0I077": null,
+        "coE0I078": null,
+        "coE0I079": null,
+        "coE0I081": null,
+        "coE0I082": null,
+        "coE0I083": null,
+        "coE0I0116": null,
+        "coE0I0122": null,
+        "coE0I0134": null,
+        "coE0I0141": "9",
+        "coE0I0150": null,
+        "coE0I0163": null,
+        "coE0I0168": null,
+        "coE0I0173": null,
+        "coE0I0178": null,
+        "coE0I0190": null,
+        "coE0I0241": null,
+        "coE0I0262": null,
+        "coE0I0266": null,
+        "coE0I0270": null,
+        "coE0I0276": null,
+        "coE0I0004": null,
+        "coE0I0071": null,
+        "coE0I0077": null,
+        "coE0I0081": null,
+        "coE2I001": "3",
+        "coE2I002": null,
+        "coE2I003": "3",
+        "coE2I004": "4",
+        "coE2I005": null,
+        "coE2I006": null,
+        "coE2I007": null,
+        "coE2I008": "3",
+        "coE2I009": null,
+        "coE2I010": null,
+        "coE2I011": null,
+        "coE2I012": null,
+        "coE2I013": null,
+        "coE2I014": null,
+        "coE2I015": null,
+        "coE2I017": null,
+        "coE2I018": null,
+        "coE2I019": null,
+        "coE2I020": null,
+        "coE2I021": null,
+        "coE2I022": null,
+        "coE2I023": null,
+        "coE2I024": null,
+        "coE2I025": null,
+        "coE2I026": null,
+        "coE2I027": null,
+        "coE2I028": null,
+        "coE2I029": null,
+        "coE2I030": null,
+        "coE2I031": null,
+        "coE2I032": null,
+        "coE2I033": null,
+        "coE2I034": null,
+        "coE2I035": null,
+        "coE2I036": null,
+        "coE2I037": null,
+        "coE2I038": null,
+        "coE2I039": null,
+        "coE2I040": null,
+        "coE2I041": null,
+        "coE2I042": null,
+        "coE2I043": null,
+        "coE2I044": null,
+        "coE2I045": null,
+        "coE2I046": null,
+        "coE2I047": null,
+        "coE2I048": null,
+        "coE2I049": null,
+        "coE2I050": null,
+        "coE2I051": null,
+        "coE2I052": null,
+        "coE2I053": null,
+        "coE2I054": null,
+        "coE2I055": null,
+        "coE2I056": null,
+        "coE2I057": null,
+        "coE2I058": null,
+        "coE2I059": null,
+        "coE2I060": null,
+        "coE2I061": null,
+        "coE2I062": null,
+        "coE2I063": null,
+        "coE2I064": null,
+        "coE2I065": null,
+        "coE2I066": null,
+        "coE2I067": null,
+        "coE2I068": null,
+        "coE2I069": null,
+        "coE2I070": null,
+        "coE2I071": null,
+        "coE2I072": null,
+        "coE2I073": null,
+        "coE2I074": null,
+        "coE2I075": null,
+        "coE2I076": null,
+        "coE2I077": null,
+        "coE2I078": null,
+        "coE2I079": null,
+        "coE2I080": null,
+        "coE2I081": null,
+        "coE2I082": null,
+        "coE2I083": null,
+        "coE2I084": null,
+        "coE2I085": null,
+        "coE2I086": null,
+        "coE2I087": null,
+        "coE2I088": null,
+        "coE2I089": null,
+        "coE2I090": null,
+        "coE2I091": null,
+        "coE2I092": null,
+        "coE2I093": null,
+        "coE2I095": null,
+        "coE2I094": null,
+        "coE2I096": null,
+        "coE2I097": null,
+        "coE2I098": null,
+        "coE2I099": null,
+        "coE2I100": null,
+        "coE2I101": null,
+        "coE2I102": null,
+        "coE2I103": null,
+        "coE2I104": null,
+        "coE2I105": null,
+        "coE2I106": null,
+        "coE2I107": null,
+        "coE2I108": null,
+        "coE2I109": null,
+        "coE2I110": null,
+        "coE2I111": null,
+        "coE2I112": null,
+        "coE2I113": null,
+        "coE2I114": null,
+        "coE2I115": null,
+        "coE2I116": null,
+        "coE2I117": null,
+        "coE2I118": null,
+        "coE2I119": null,
+        "coE2I121": null,
+        "coE2I122": null,
+        "coE2I123": null,
+        "coE2I124": null,
+        "coE2I125": null,
+        "coE2I126": null,
+        "coE2I127": null,
+        "coE2I128": null,
+        "coE2I129": null,
+        "coE2I130": null,
+        "coE2I131": null,
+        "coE2I132": null,
+        "coE2I133": null,
+        "coE2I134": null,
+        "coE2I135": null,
+        "coE2I136": null,
+        "coE2I137": null,
+        "coE2I138": null,
+        "coE2I139": null,
+        "coE2I140": null,
+        "coE2I141": null,
+        "coE2I142": null,
+        "coE2I143": null,
+        "coE2I144": null,
+        "coE2I145": null,
+        "coE2I146": null,
+        "coE2I147": null,
+        "coE2I148": null,
+        "coE2I150": null,
+        "coE2I151": null,
+        "coE2I152": null,
+        "coE2I154": null,
+        "coE2I155": null,
+        "coE2I156": null,
+        "coE2I157": null,
+        "coE2I158": null,
+        "coE2I159": null,
+        "coE2I160": null,
+        "coE2I161": null,
+        "coE2I162": null,
+        "coE2I163": null,
+        "coE2I164": null,
+        "coE2I165": null,
+        "coE2I166": null,
+        "coE2I167": null,
+        "coE2I168": null,
+        "coE2I169": null,
+        "coE2I170": null,
+        "coE2I171": "9",
+        "coE2I172": null,
+        "coE2I173": null,
+        "coE2I178": null,
+        "coE2I179": null,
+        "coE2I217": null,
+        "coE2I218": null,
+        "coE2I220": null,
+        "coE2I221": null,
+        "coE2I222": "6000",
+        "coE2I223": null,
+        "coE2I224": null,
+        "coE2I225": "Feb 10 2026 12:00AM",
+        "coE2I226": null,
+        "coE2I227": null,
+        "coE2I228": null,
+        "coE2I229": null,
+        "coE2I230": "Pneumologie",
+        "coE2I231": null,
+        "coE2I232": "Pneumologie",
+        "coE2I2000": null,
+        "coE2I2013": null,
+        "coE2I2022": null,
+        "coE2I2029": null,
+        "coE2I2033": null,
+        "coE2I2092": null,
+        "coE2I2099": null,
+        "coE2I2126": null,
+        "coE2I2134": null,
+        "coE2I2148": null,
+        "coE2I2154": null,
+        "coE2I2157": null,
+        "coE2I2165": null,
+        "coE2I2170": null,
+        "coE2I2175": null,
+        "coE2I2180": null,
+        "coE2I2188": null,
+        "coE2I2191": null,
+        "coE2I2195": null,
+        "coE2I2199": null,
+        "coE2I2203": null,
+        "coE2I2207": null,
+        "coE2I2211": null,
+        "coE2I2216": null,
+        "coE2I2222": null,
+        "coE2I2256": null,
+        "coE2I2267": null,
+        "coE2I2279": null,
+        "coMaxDekuGrad": null,
+        "coDekubitusWertTotal": null,
+        "coLastAssessment": null,
+        "coE3I0889": null,
+        "coCaseIdAlpha": null
+      }
+    ]
+  },
+  "tbImportDevice1HzMotionData": {
+    "columns": [
+      {
+        "name": "coId",
+        "type": "bigint"
+      },
+      {
+        "name": "coCaseId",
+        "type": "bigint"
+      },
+      {
+        "name": "coTimestamp",
+        "type": "datetime"
+      },
+      {
+        "name": "coPatient_id",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coDevice_id",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coBed_occupied_0_1",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coMovement_score_0_100",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAccel_x_m_s2",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAccel_y_m_s2",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAccel_z_m_s2",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAccel_magnitude_g",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPressure_zone1_0_100",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPressure_zone2_0_100",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPressure_zone3_0_100",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPressure_zone4_0_100",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coBed_exit_event_0_1",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coBed_return_event_0_1",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coFall_event_0_1",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coImpact_magnitude_g",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coEvent_id",
+        "type": "nvarchar"
+      }
+    ],
+    "row_count": 30,
+    "sample_rows": [
+      {
+        "coCaseId": "2300",
+        "coTimestamp": "Feb 20 2026  2:02AM",
+        "coPatient_id": "102300",
+        "coDevice_id": "MAT-8665",
+        "coBed_occupied_0_1": "1",
+        "coMovement_score_0_100": "17.7",
+        "coAccel_x_m_s2": "0.166",
+        "coAccel_y_m_s2": "0.268",
+        "coAccel_z_m_s2": "9.69",
+        "coAccel_magnitude_g": "0.988",
+        "coPressure_zone1_0_100": "39.8",
+        "coPressure_zone2_0_100": "54.1",
+        "coPressure_zone3_0_100": "52.9",
+        "coPressure_zone4_0_100": "61.7",
+        "coBed_exit_event_0_1": "0",
+        "coBed_return_event_0_1": "0",
+        "coFall_event_0_1": "0",
+        "coImpact_magnitude_g": "",
+        "coEvent_id": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coTimestamp": "Feb 20 2026  2:02AM",
+        "coPatient_id": "102300",
+        "coDevice_id": "MAT-8665",
+        "coBed_occupied_0_1": "1",
+        "coMovement_score_0_100": "8.5",
+        "coAccel_x_m_s2": "0.35",
+        "coAccel_y_m_s2": "0.135",
+        "coAccel_z_m_s2": "9.409",
+        "coAccel_magnitude_g": "0.96",
+        "coPressure_zone1_0_100": "73.0",
+        "coPressure_zone2_0_100": "59.4",
+        "coPressure_zone3_0_100": "59.6",
+        "coPressure_zone4_0_100": "54.3",
+        "coBed_exit_event_0_1": "0",
+        "coBed_return_event_0_1": "0",
+        "coFall_event_0_1": "0",
+        "coImpact_magnitude_g": "",
+        "coEvent_id": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coTimestamp": "Feb 20 2026  2:02AM",
+        "coPatient_id": "102300",
+        "coDevice_id": "MAT-8665",
+        "coBed_occupied_0_1": "1",
+        "coMovement_score_0_100": "9.0",
+        "coAccel_x_m_s2": "-0.064",
+        "coAccel_y_m_s2": "-0.051",
+        "coAccel_z_m_s2": "9.518",
+        "coAccel_magnitude_g": "0.97",
+        "coPressure_zone1_0_100": "49.6",
+        "coPressure_zone2_0_100": "34.0",
+        "coPressure_zone3_0_100": "36.5",
+        "coPressure_zone4_0_100": "32.9",
+        "coBed_exit_event_0_1": "0",
+        "coBed_return_event_0_1": "0",
+        "coFall_event_0_1": "0",
+        "coImpact_magnitude_g": "",
+        "coEvent_id": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coTimestamp": "Feb 21 2026  2:02AM",
+        "coPatient_id": "102300",
+        "coDevice_id": "MAT-8665",
+        "coBed_occupied_0_1": "1",
+        "coMovement_score_0_100": "5.5",
+        "coAccel_x_m_s2": "0.02",
+        "coAccel_y_m_s2": "-0.105",
+        "coAccel_z_m_s2": "9.526",
+        "coAccel_magnitude_g": "0.971",
+        "coPressure_zone1_0_100": "66.4",
+        "coPressure_zone2_0_100": "64.2",
+        "coPressure_zone3_0_100": "76.0",
+        "coPressure_zone4_0_100": "77.3",
+        "coBed_exit_event_0_1": "0",
+        "coBed_return_event_0_1": "0",
+        "coFall_event_0_1": "0",
+        "coImpact_magnitude_g": "",
+        "coEvent_id": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coTimestamp": "Feb 21 2026  2:02AM",
+        "coPatient_id": "102300",
+        "coDevice_id": "MAT-8665",
+        "coBed_occupied_0_1": "1",
+        "coMovement_score_0_100": "15.5",
+        "coAccel_x_m_s2": "-0.02",
+        "coAccel_y_m_s2": "0.167",
+        "coAccel_z_m_s2": "10.16",
+        "coAccel_magnitude_g": "1.036",
+        "coPressure_zone1_0_100": "55.0",
+        "coPressure_zone2_0_100": "67.4",
+        "coPressure_zone3_0_100": "67.0",
+        "coPressure_zone4_0_100": "56.1",
+        "coBed_exit_event_0_1": "0",
+        "coBed_return_event_0_1": "0",
+        "coFall_event_0_1": "0",
+        "coImpact_magnitude_g": "",
+        "coEvent_id": ""
+      }
+    ]
+  },
+  "tbImportDeviceMotionData": {
+    "columns": [
+      {
+        "name": "coId",
+        "type": "bigint"
+      },
+      {
+        "name": "coCaseId",
+        "type": "bigint"
+      },
+      {
+        "name": "coTimestamp",
+        "type": "datetime"
+      },
+      {
+        "name": "coPatient_id",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coMovement_index_0_100",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coMicro_movements_count",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coBed_exit_detected_0_1",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coFall_event_0_1",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coImpact_magnitude_g",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPost_fall_immobility_minutes",
+        "type": "nvarchar"
+      }
+    ],
+    "row_count": 27,
+    "sample_rows": [
+      {
+        "coCaseId": "2300",
+        "coTimestamp": "Jan 20 2026  3:00AM",
+        "coPatient_id": "102300",
+        "coMovement_index_0_100": "86.0",
+        "coMicro_movements_count": "8",
+        "coBed_exit_detected_0_1": "0",
+        "coFall_event_0_1": "0",
+        "coImpact_magnitude_g": "",
+        "coPost_fall_immobility_minutes": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coTimestamp": "Jan 20 2026  4:00AM",
+        "coPatient_id": "102300",
+        "coMovement_index_0_100": "53.6",
+        "coMicro_movements_count": "24",
+        "coBed_exit_detected_0_1": "0",
+        "coFall_event_0_1": "0",
+        "coImpact_magnitude_g": "",
+        "coPost_fall_immobility_minutes": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coTimestamp": "Jan 20 2026  5:00AM",
+        "coPatient_id": "102300",
+        "coMovement_index_0_100": "46.8",
+        "coMicro_movements_count": "12",
+        "coBed_exit_detected_0_1": "0",
+        "coFall_event_0_1": "0",
+        "coImpact_magnitude_g": "",
+        "coPost_fall_immobility_minutes": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coTimestamp": "Jan 21 2026  6:00AM",
+        "coPatient_id": "102300",
+        "coMovement_index_0_100": "26.2",
+        "coMicro_movements_count": "4",
+        "coBed_exit_detected_0_1": "0",
+        "coFall_event_0_1": "0",
+        "coImpact_magnitude_g": "",
+        "coPost_fall_immobility_minutes": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coTimestamp": "Jan 21 2026  7:00AM",
+        "coPatient_id": "102300",
+        "coMovement_index_0_100": "45.7",
+        "coMicro_movements_count": "15",
+        "coBed_exit_detected_0_1": "1",
+        "coFall_event_0_1": "0",
+        "coImpact_magnitude_g": "",
+        "coPost_fall_immobility_minutes": ""
+      }
+    ]
+  },
+  "tbImportIcd10Data": {
+    "columns": [
+      {
+        "name": "coId",
+        "type": "bigint"
+      },
+      {
+        "name": "coCaseId",
+        "type": "bigint"
+      },
+      {
+        "name": "coWard",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAdmission_date",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coDischarge_date",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coLength_of_stay_days",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPrimary_icd10_code",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPrimary_icd10_description_en",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coSecondary_icd10_codes",
+        "type": "nvarchar"
+      },
+      {
+        "name": "cpSecondary_icd10_descriptions_en",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coOps_codes",
+        "type": "nvarchar"
+      },
+      {
+        "name": "ops_descriptions_en",
+        "type": "nvarchar"
+      }
+    ],
+    "row_count": 3,
+    "sample_rows": [
+      {
+        "coCaseId": "6000",
+        "coWard": "Pneumologie",
+        "coAdmission_date": "2026-02-02",
+        "coDischarge_date": "2026-02-20",
+        "coLength_of_stay_days": "19",
+        "coPrimary_icd10_code": "J96.0",
+        "coPrimary_icd10_description_en": "Acute respiratory failure",
+        "coSecondary_icd10_codes": "N17.9; E86; I10",
+        "cpSecondary_icd10_descriptions_en": "Acute kidney failure, unspecified; Volume depletion; Essential (primary) hypertension",
+        "coOps_codes": "1-632.0",
+        "ops_descriptions_en": "Diagnostic bronchoscopy"
+      },
+      {
+        "coCaseId": "2300",
+        "coWard": "Innere Medizin",
+        "coAdmission_date": "2026-01-20",
+        "coDischarge_date": "2026-01-26",
+        "coLength_of_stay_days": "7",
+        "coPrimary_icd10_code": "I50.1",
+        "coPrimary_icd10_description_en": "Left ventricular failure",
+        "coSecondary_icd10_codes": "Z74.1",
+        "cpSecondary_icd10_descriptions_en": "Need for assistance with personal care",
+        "coOps_codes": "1-632.0",
+        "ops_descriptions_en": "Intravenous medication administration; Diagnostic bronchoscopy"
+      },
+      {
+        "coCaseId": "4000",
+        "coWard": "Innere Medizin",
+        "coAdmission_date": "2026-02-08",
+        "coDischarge_date": "2026-02-11",
+        "coLength_of_stay_days": "4",
+        "coPrimary_icd10_code": "K92.2",
+        "coPrimary_icd10_description_en": "Gastrointestinal hemorrhage, unspecified",
+        "coSecondary_icd10_codes": "E86",
+        "cpSecondary_icd10_descriptions_en": "Volume depletion",
+        "coOps_codes": "8-800.c0",
+        "ops_descriptions_en": "Intravenous medication administration"
+      }
+    ]
+  },
+  "tbImportLabsData": {
+    "columns": [
+      {
+        "name": "coId",
+        "type": "bigint"
+      },
+      {
+        "name": "coCaseId",
+        "type": "bigint"
+      },
+      {
+        "name": "coSpecimen_datetime",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coSodium_mmol_L",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coSodium_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "cosodium_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "cosodium_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPotassium_mmol_L",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPotassium_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPotassium_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPotassium_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coCreatinine_mg_dL",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coCreatinine_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coCreatinine_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coCreatinine_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coEgfr_mL_min_1_73m2",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coEgfr_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coEgfr_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coEgfr_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coGlucose_mg_dL",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coGlucose_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coGlucose_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coGlucose_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coHemoglobin_g_dL",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coHb_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coHb_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coHb_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coWbc_10e9_L",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coWbc_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coWbc_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coWbc_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPlatelets_10e9_L",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPlatelets_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPlt_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coPlt_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coCrp_mg_L",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coCrp_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coCrp_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coCrp_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAlt_U_L",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAlt_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAlt_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAlt_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAst_U_L",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAst_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAst_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAst_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coBilirubin_mg_dL",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coBilirubin_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coBili_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coBili_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAlbumin_g_dL",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAlbumin_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAlbumin_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAlbumin_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coInr",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coInr_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coInr_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coInr_ref_high",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coLactate_mmol_L",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coLactate_flag",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coLactate_ref_low",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coLactate_ref_high",
+        "type": "nvarchar"
+      }
+    ],
+    "row_count": 3,
+    "sample_rows": [
+      {
+        "coCaseId": "2300",
+        "coSpecimen_datetime": "05.01.2026 10:19",
+        "coSodium_mmol_L": "139.6",
+        "coSodium_flag": "",
+        "cosodium_ref_low": "135",
+        "cosodium_ref_high": "145",
+        "coPotassium_mmol_L": "Mai 32",
+        "coPotassium_flag": "H",
+        "coPotassium_ref_low": "03. Mai",
+        "coPotassium_ref_high": "05. Jan",
+        "coCreatinine_mg_dL": "0.87",
+        "coCreatinine_flag": "",
+        "coCreatinine_ref_low": "0.6",
+        "coCreatinine_ref_high": "01. Mrz",
+        "coEgfr_mL_min_1_73m2": "70.0",
+        "coEgfr_flag": "L",
+        "coEgfr_ref_low": "90",
+        "coEgfr_ref_high": "140",
+        "coGlucose_mg_dL": "102.0",
+        "coGlucose_flag": "",
+        "coGlucose_ref_low": "70",
+        "coGlucose_ref_high": "140",
+        "coHemoglobin_g_dL": "12. Feb",
+        "coHb_flag": "",
+        "coHb_ref_low": "12.0",
+        "coHb_ref_high": "16. Mai",
+        "coWbc_10e9_L": "08. Sep",
+        "coWbc_flag": "",
+        "coWbc_ref_low": "4.0",
+        "coWbc_ref_high": "11.0",
+        "coPlatelets_10e9_L": "184.0",
+        "coPlatelets_flag": "",
+        "coPlt_ref_low": "150",
+        "coPlt_ref_high": "450",
+        "coCrp_mg_L": "02. Feb",
+        "coCrp_flag": "",
+        "coCrp_ref_low": "0.0",
+        "coCrp_ref_high": "5.0",
+        "coAlt_U_L": "25.0",
+        "coAlt_flag": "",
+        "coAlt_ref_low": "0",
+        "coAlt_ref_high": "45",
+        "coAst_U_L": "13.0",
+        "coAst_flag": "",
+        "coAst_ref_low": "0",
+        "coAst_ref_high": "40",
+        "coBilirubin_mg_dL": "0.71",
+        "coBilirubin_flag": "",
+        "coBili_ref_low": "0.1",
+        "coBili_ref_high": "01. Feb",
+        "coAlbumin_g_dL": "Apr 16",
+        "coAlbumin_flag": "",
+        "coAlbumin_ref_low": "03. Mai",
+        "coAlbumin_ref_high": "5.0",
+        "coInr": "0.81",
+        "coInr_flag": "L",
+        "coInr_ref_low": "0.9",
+        "coInr_ref_high": "01. Feb",
+        "coLactate_mmol_L": "Jan 37",
+        "coLactate_flag": "",
+        "coLactate_ref_low": "0.5",
+        "coLactate_ref_high": "02. Feb"
+      },
+      {
+        "coCaseId": "4000",
+        "coSpecimen_datetime": "23.01.2025 08:08",
+        "coSodium_mmol_L": "135.1",
+        "coSodium_flag": "",
+        "cosodium_ref_low": "135",
+        "cosodium_ref_high": "145",
+        "coPotassium_mmol_L": "Mrz 56",
+        "coPotassium_flag": "",
+        "coPotassium_ref_low": "03. Mai",
+        "coPotassium_ref_high": "05. Jan",
+        "coCreatinine_mg_dL": "01. Feb",
+        "coCreatinine_flag": "",
+        "coCreatinine_ref_low": "0.6",
+        "coCreatinine_ref_high": "01. Mrz",
+        "coEgfr_mL_min_1_73m2": "93.0",
+        "coEgfr_flag": "",
+        "coEgfr_ref_low": "90",
+        "coEgfr_ref_high": "140",
+        "coGlucose_mg_dL": "120.0",
+        "coGlucose_flag": "",
+        "coGlucose_ref_low": "70",
+        "coGlucose_ref_high": "140",
+        "coHemoglobin_g_dL": "11. Jan",
+        "coHb_flag": "L",
+        "coHb_ref_low": "12.0",
+        "coHb_ref_high": "16. Mai",
+        "coWbc_10e9_L": "07. Mrz",
+        "coWbc_flag": "",
+        "coWbc_ref_low": "4.0",
+        "coWbc_ref_high": "11.0",
+        "coPlatelets_10e9_L": "290.0",
+        "coPlatelets_flag": "",
+        "coPlt_ref_low": "150",
+        "coPlt_ref_high": "450",
+        "coCrp_mg_L": "01. Jan",
+        "coCrp_flag": "",
+        "coCrp_ref_low": "0.0",
+        "coCrp_ref_high": "5.0",
+        "coAlt_U_L": "",
+        "coAlt_flag": "",
+        "coAlt_ref_low": "0",
+        "coAlt_ref_high": "45",
+        "coAst_U_L": "45.0",
+        "coAst_flag": "H",
+        "coAst_ref_low": "0",
+        "coAst_ref_high": "40",
+        "coBilirubin_mg_dL": "Jan 13",
+        "coBilirubin_flag": "",
+        "coBili_ref_low": "0.1",
+        "coBili_ref_high": "01. Feb",
+        "coAlbumin_g_dL": "Apr 53",
+        "coAlbumin_flag": "",
+        "coAlbumin_ref_low": "03. Mai",
+        "coAlbumin_ref_high": "5.0",
+        "coInr": "0.8",
+        "coInr_flag": "L",
+        "coInr_ref_low": "0.9",
+        "coInr_ref_high": "01. Feb",
+        "coLactate_mmol_L": "Feb 44",
+        "coLactate_flag": "H",
+        "coLactate_ref_low": "0.5",
+        "coLactate_ref_high": "02. Feb"
+      },
+      {
+        "coCaseId": "6000",
+        "coSpecimen_datetime": "15.02.2026 05:54",
+        "coSodium_mmol_L": "134.8",
+        "coSodium_flag": "L",
+        "cosodium_ref_low": "135",
+        "cosodium_ref_high": "145",
+        "coPotassium_mmol_L": "Mrz 53",
+        "coPotassium_flag": "",
+        "coPotassium_ref_low": "03. Mai",
+        "coPotassium_ref_high": "05. Jan",
+        "coCreatinine_mg_dL": "01. Mrz",
+        "coCreatinine_flag": "",
+        "coCreatinine_ref_low": "0.6",
+        "coCreatinine_ref_high": "01. Mrz",
+        "coEgfr_mL_min_1_73m2": "97.0",
+        "coEgfr_flag": "",
+        "coEgfr_ref_low": "90",
+        "coEgfr_ref_high": "140",
+        "coGlucose_mg_dL": "91.0",
+        "coGlucose_flag": "",
+        "coGlucose_ref_low": "70",
+        "coGlucose_ref_high": "140",
+        "coHemoglobin_g_dL": "12. Sep",
+        "coHb_flag": "",
+        "coHb_ref_low": "12.0",
+        "coHb_ref_high": "16. Mai",
+        "coWbc_10e9_L": "04. Mrz",
+        "coWbc_flag": "",
+        "coWbc_ref_low": "4.0",
+        "coWbc_ref_high": "11.0",
+        "coPlatelets_10e9_L": "311.0",
+        "coPlatelets_flag": "",
+        "coPlt_ref_low": "150",
+        "coPlt_ref_high": "450",
+        "coCrp_mg_L": "17. Jul",
+        "coCrp_flag": "H",
+        "coCrp_ref_low": "0.0",
+        "coCrp_ref_high": "5.0",
+        "coAlt_U_L": "20.0",
+        "coAlt_flag": "",
+        "coAlt_ref_low": "0",
+        "coAlt_ref_high": "45",
+        "coAst_U_L": "17.0",
+        "coAst_flag": "",
+        "coAst_ref_low": "0",
+        "coAst_ref_high": "40",
+        "coBilirubin_mg_dL": "0.58",
+        "coBilirubin_flag": "",
+        "coBili_ref_low": "0.1",
+        "coBili_ref_high": "01. Feb",
+        "coAlbumin_g_dL": "Apr 88",
+        "coAlbumin_flag": "",
+        "coAlbumin_ref_low": "03. Mai",
+        "coAlbumin_ref_high": "5.0",
+        "coInr": "0.98",
+        "coInr_flag": "",
+        "coInr_ref_low": "0.9",
+        "coInr_ref_high": "01. Feb",
+        "coLactate_mmol_L": "01. Mai",
+        "coLactate_flag": "",
+        "coLactate_ref_low": "0.5",
+        "coLactate_ref_high": "02. Feb"
+      }
+    ]
+  },
+  "tbImportMedicationInpatientData": {
+    "columns": [
+      {
+        "name": "coId",
+        "type": "bigint"
+      },
+      {
+        "name": "coCaseId",
+        "type": "bigint"
+      },
+      {
+        "name": "coPatient_id",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coRecord_type",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coEncounter_id",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coWard",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coAdmission_datetime",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coDischarge_datetime",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coOrder_id",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coOrder_uuid",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coMedication_code_atc",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coMedication_name",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coRoute",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coDose",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coDose_unit",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coFrequency",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coOrder_start_datetime",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coOrder_stop_datetime",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coIs_prn_0_1",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coIndication",
+        "type": "nvarchar"
+      },
+      {
+        "name": "prescriber_role",
+        "type": "nvarchar"
+      },
+      {
+        "name": "order_status",
+        "type": "nvarchar"
+      },
+      {
+        "name": "administration_datetime",
+        "type": "nvarchar"
+      },
+      {
+        "name": "administered_dose",
+        "type": "nvarchar"
+      },
+      {
+        "name": "administered_unit",
+        "type": "nvarchar"
+      },
+      {
+        "name": "administration_status",
+        "type": "nvarchar"
+      },
+      {
+        "name": "note",
+        "type": "nvarchar"
+      }
+    ],
+    "row_count": 30,
+    "sample_rows": [
+      {
+        "coCaseId": "2300",
+        "coPatient_id": "102300",
+        "coRecord_type": "ADMIN",
+        "coEncounter_id": "ENC-0025",
+        "coWard": "Innere Medizin",
+        "coAdmission_datetime": "2026-02-20 00:00:00",
+        "coDischarge_datetime": "2026-02-26 00:00:00",
+        "coOrder_id": "ORD-ENC-0025-06",
+        "coOrder_uuid": "28035001-dd7d-4ce0-8504-f8fcb22f7d54",
+        "coMedication_code_atc": "A10BA02",
+        "coMedication_name": "Metformin",
+        "coRoute": "PO",
+        "coDose": "850.0",
+        "coDose_unit": "mg",
+        "coFrequency": "3x tÃ¤glich",
+        "coOrder_start_datetime": "2026-02-22 00:00:00",
+        "coOrder_stop_datetime": "2026-02-26 00:00:00",
+        "coIs_prn_0_1": "0",
+        "coIndication": "Antibiotikatherapie",
+        "prescriber_role": "Facharzt",
+        "order_status": "active",
+        "administration_datetime": "2026-02-21 14:46:39",
+        "administered_dose": "850",
+        "administered_unit": "mg",
+        "administration_status": "given",
+        "note": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coPatient_id": "102300",
+        "coRecord_type": "ORDER",
+        "coEncounter_id": "ENC-0025",
+        "coWard": "Innere Medizin",
+        "coAdmission_datetime": "2026-02-20 00:00:00",
+        "coDischarge_datetime": "2026-02-26 00:00:00",
+        "coOrder_id": "ORD-ENC-0025-06",
+        "coOrder_uuid": "28035001-dd7d-4ce0-8504-f8fcb22f7d54",
+        "coMedication_code_atc": "A10BA02",
+        "coMedication_name": "Metformin",
+        "coRoute": "PO",
+        "coDose": "850.0",
+        "coDose_unit": "mg",
+        "coFrequency": "3x tÃ¤glich",
+        "coOrder_start_datetime": "2026-02-22 00:00:00",
+        "coOrder_stop_datetime": "2026-02-26 00:00:00",
+        "coIs_prn_0_1": "0",
+        "coIndication": "Antibiotikatherapie",
+        "prescriber_role": "Facharzt",
+        "order_status": "active",
+        "administration_datetime": "",
+        "administered_dose": "",
+        "administered_unit": "",
+        "administration_status": "",
+        "note": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coPatient_id": "102300",
+        "coRecord_type": "ADMIN",
+        "coEncounter_id": "ENC-0025",
+        "coWard": "Innere Medizin",
+        "coAdmission_datetime": "2026-02-20 00:00:00",
+        "coDischarge_datetime": "2026-02-26 00:00:00",
+        "coOrder_id": "ORD-ENC-0025-06",
+        "coOrder_uuid": "28035001-dd7d-4ce0-8504-f8fcb22f7d54",
+        "coMedication_code_atc": "A10BA02",
+        "coMedication_name": "Metformin",
+        "coRoute": "PO",
+        "coDose": "850.0",
+        "coDose_unit": "mg",
+        "coFrequency": "3x tÃ¤glich",
+        "coOrder_start_datetime": "2026-02-22 00:00:00",
+        "coOrder_stop_datetime": "2026-02-26 00:00:00",
+        "coIs_prn_0_1": "0",
+        "coIndication": "Antibiotikatherapie",
+        "prescriber_role": "Facharzt",
+        "order_status": "active",
+        "administration_datetime": "2026-02-21 23:04:39",
+        "administered_dose": "850",
+        "administered_unit": "mg",
+        "administration_status": "given",
+        "note": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coPatient_id": "102300",
+        "coRecord_type": "ADMIN",
+        "coEncounter_id": "ENC-0025",
+        "coWard": "Innere Medizin",
+        "coAdmission_datetime": "2026-02-20 00:00:00",
+        "coDischarge_datetime": "2026-02-26 00:00:00",
+        "coOrder_id": "ORD-ENC-0025-06",
+        "coOrder_uuid": "28035001-dd7d-4ce0-8504-f8fcb22f7d54",
+        "coMedication_code_atc": "A10BA02",
+        "coMedication_name": "Metformin",
+        "coRoute": "PO",
+        "coDose": "850.0",
+        "coDose_unit": "mg",
+        "coFrequency": "3x tÃ¤glich",
+        "coOrder_start_datetime": "2026-02-22 00:00:00",
+        "coOrder_stop_datetime": "2026-02-26 00:00:00",
+        "coIs_prn_0_1": "0",
+        "coIndication": "Antibiotikatherapie",
+        "prescriber_role": "Facharzt",
+        "order_status": "active",
+        "administration_datetime": "2026-02-11 06:53:39",
+        "administered_dose": "850",
+        "administered_unit": "mg",
+        "administration_status": "given",
+        "note": ""
+      },
+      {
+        "coCaseId": "2300",
+        "coPatient_id": "102300",
+        "coRecord_type": "ADMIN",
+        "coEncounter_id": "ENC-0025",
+        "coWard": "Innere Medizin",
+        "coAdmission_datetime": "2026-02-20 00:00:00",
+        "coDischarge_datetime": "2026-02-26 00:00:00",
+        "coOrder_id": "ORD-ENC-0025-06",
+        "coOrder_uuid": "28035001-dd7d-4ce0-8504-f8fcb22f7d54",
+        "coMedication_code_atc": "A10BA02",
+        "coMedication_name": "Metformin",
+        "coRoute": "PO",
+        "coDose": "850.0",
+        "coDose_unit": "mg",
+        "coFrequency": "3x tÃ¤glich",
+        "coOrder_start_datetime": "2026-02-22 00:00:00",
+        "coOrder_stop_datetime": "2026-02-26 00:00:00",
+        "coIs_prn_0_1": "0",
+        "coIndication": "Antibiotikatherapie",
+        "prescriber_role": "Facharzt",
+        "order_status": "active",
+        "administration_datetime": "2026-02-11 14:39:39",
+        "administered_dose": "",
+        "administered_unit": "",
+        "administration_status": "held",
+        "note": "Vitalparameter auffÃ¤llig"
+      }
+    ]
+  },
+  "tbImportNursingDailyReportsData": {
+    "columns": [
+      {
+        "name": "coId",
+        "type": "bigint"
+      },
+      {
+        "name": "coCaseId",
+        "type": "bigint"
+      },
+      {
+        "name": "coPatient_id",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coWard",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coReport_date",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coShift",
+        "type": "nvarchar"
+      },
+      {
+        "name": "coNursing_note_free_text",
+        "type": "nvarchar"
+      }
+    ],
+    "row_count": 3,
+    "sample_rows": [
+      {
+        "coCaseId": "6000",
+        "coPatient_id": "306000",
+        "coWard": "Pneumologie",
+        "coReport_date": "2026-02-05",
+        "coShift": "Late shift",
+        "coNursing_note_free_text": "Spätdienst: Mobilized with assistance, Restful night sleep, Fluid intake adequate. Interventions: Pressure ulcer prevention implemented, Family discussion conducted. Evaluation: Condition stable."
+      },
+      {
+        "coCaseId": "2300",
+        "coPatient_id": "102300",
+        "coWard": "Innere Medizin",
+        "coReport_date": "2026-02-24",
+        "coShift": "Night shift",
+        "coNursing_note_free_text": "Nachtdienst: Pain score 5/10 in surgical area, Wound without irritation, dry, No bowel movement for 2 days, Restful night sleep. Interventions: Blood glucose monitored, Family discussion conducted. Evaluation: Close monitoring still required."
+      },
+      {
+        "coCaseId": "4000",
+        "coPatient_id": "204000",
+        "coWard": "Innere Medizin",
+        "coReport_date": "2026-02-09",
+        "coShift": "Night shift",
+        "coNursing_note_free_text": "Nachtdienst: Called staff multiple times during the night, Restful night sleep, No acute pain reported, Fluid intake below 1 liter. Interventions: Pressure ulcer prevention implemented, Fluid balance documented, Vital signs checked."
+      }
+    ]
+  }
+}

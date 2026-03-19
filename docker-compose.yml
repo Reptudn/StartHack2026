@@ -52,7 +52,7 @@ services:
       dockerfile: Dockerfile
     environment:
       OLLAMA_URL: http://ollama:11434
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:3b}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
       GO_API_URL: http://api:${PORT:-8080}
     depends_on:
       ollama-pull:
@@ -78,7 +78,7 @@ services:
     image: ollama/ollama:latest
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    command: pull ${OLLAMA_MODEL:-qwen2.5:3b}
+    command: pull ${OLLAMA_MODEL:-qwen2.5:1.5b}
     depends_on:
       ollama:
         condition: service_healthy
@@ -92,7 +92,7 @@ services:
     ports:
       - "${WEB_PORT:-4242}:4242"
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:${PORT:-8080}}
     depends_on:
       api:
         condition: service_started
