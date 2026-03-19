@@ -1,39 +1,44 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
 	"epaccdataunifier/config"
 
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var DB *sql.DB
+var DB *gorm.DB
 
 func Connect(cfg *config.Config) error {
 	var err error
-	DB, err = sql.Open("postgres", cfg.DSN())
+	dsn := cfg.DSN()
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return fmt.Errorf("failed to open database: %w", err)
+		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	if err = DB.Ping(); err != nil {
-		return fmt.Errorf("failed to ping database: %w", err)
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get sql.DB: %w", err)
 	}
 
 	// Connection pool settings
-	DB.SetMaxOpenConns(25)
-	DB.SetMaxIdleConns(5)
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(5)
 
-	log.Println("[database] Connected to PostgreSQL")
+	log.Println("[database] Connected to PostgreSQL via GORM")
 	return nil
 }
 
 func Close() {
 	if DB != nil {
-		DB.Close()
-		log.Println("[database] Connection closed")
+		sqlDB, err := DB.DB()
+		if err == nil {
+			sqlDB.Close()
+			log.Println("[database] Connection closed")
+		}
 	}
 }

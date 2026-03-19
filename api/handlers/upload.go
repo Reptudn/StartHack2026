@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -12,11 +14,9 @@ import (
 	"epaccdataunifier/database"
 	"epaccdataunifier/models"
 	"epaccdataunifier/parser"
-	"epaccdataunifier/validator"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 type UploadHandler struct {
@@ -37,7 +37,6 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 
 	files := form.File["files"]
 	if len(files) == 0 {
-		// Try single file field
 		file, err := c.FormFile("file")
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "No files provided"})
@@ -49,7 +48,6 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 	var results []models.UploadResponse
 
 	for _, fileHeader := range files {
-		// Check file size
 		if fileHeader.Size > h.Config.MaxUploadMB*1024*1024 {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{
 				Error: fmt.Sprintf("File %s exceeds max size of %d MB", fileHeader.Filename, h.Config.MaxUploadMB),
@@ -57,7 +55,6 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 			return
 		}
 
-		// Detect file type
 		fileType := parser.DetectFileType(fileHeader.Filename)
 		if fileType == "unknown" {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{
@@ -87,7 +84,7 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 			return
 		}
 
-		// Parse the file
+		// Parse headers + sample rows
 		var parsed *models.ParsedFile
 		if fileType == "csv" || fileType == "tsv" || fileType == "txt" {
 			f, err := os.Open(savedPath)
@@ -99,117 +96,101 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 
 			parsed, err = parser.ParseCSV(f)
 			if err != nil {
-				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Failed to parse CSV: " + err.Error()})
+				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Failed to parse file: " + err.Error()})
 				return
 			}
 		} else {
-			// For xlsx/pdf, create a stub parsed file (parsing not yet implemented)
 			parsed = &models.ParsedFile{
 				Headers: []string{"raw_content"},
 				Rows:    []models.ParsedRow{},
 			}
 		}
 
-		// Run validation
-		structuralErrors := validator.ValidateStructural(parsed)
-		semanticErrors := validator.ValidateSemantic(parsed)
-
-		allErrors := append(structuralErrors, semanticErrors...)
-
-		// Calculate quality score
-		score := validator.CalculateQualityScore(parsed, allErrors)
-		status := validator.DetermineStatus(allErrors, score)
-
-		// Count only error/warning severity
-		errorCount := 0
-		for _, e := range allErrors {
-			if e.Severity == "error" || e.Severity == "warning" {
-				errorCount++
+		sample20 := c.PostForm("sample20") == "true"
+		
+		limit := len(parsed.Rows)
+		if sample20 {
+			limit = len(parsed.Rows) / 5
+			if limit < 3 && len(parsed.Rows) >= 3 {
+				limit = 3 // Give at least 3 rows to be useful
+			} else if len(parsed.Rows) < 3 {
+				limit = len(parsed.Rows)
 			}
 		}
 
-		// Store in database
-		var fileID int64
-		columnsMapped := parsed.Headers
-		err = database.DB.QueryRow(`
-			INSERT INTO file_uploads (filename, file_type, file_size_bytes, quality_score, completeness, accuracy, consistency, timeliness, status, row_count, error_count, columns_mapped)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-			RETURNING id`,
-			fileHeader.Filename, fileType, fileHeader.Size,
-			score.Overall, score.Completeness, score.Accuracy, score.Consistency, score.Timeliness,
-			status, len(parsed.Rows), errorCount, pq.Array(columnsMapped),
-		).Scan(&fileID)
+		// Build sample rows for ML service
+		sampleRows := make([][]string, 0, limit)
+		for i, row := range parsed.Rows {
+			if i >= limit {
+				break
+			}
+			rowValues := make([]string, len(parsed.Headers))
+			for j, h := range parsed.Headers {
+				rowValues[j] = row.Fields[h]
+			}
+			sampleRows = append(sampleRows, rowValues)
+		}
+
+		var mapping *models.MLMapping
+		mappingJSON := "{}"
+		status := "error"
+
+		mlReq := models.MLMappingRequest{
+			Headers:    parsed.Headers,
+			SampleRows: sampleRows,
+			Filename:   fileHeader.Filename,
+		}
+
+		mlBody, _ := json.Marshal(mlReq)
+		resp, err := http.Post(
+			h.Config.MLServiceURL+"/api/map",
+			"application/json",
+			bytes.NewReader(mlBody),
+		)
 		if err != nil {
+			log.Printf("[upload] ML service call failed: %v", err)
+		} else {
+			defer resp.Body.Close()
+			body, _ := io.ReadAll(resp.Body)
+			var mlResp models.MLMapping
+			if err := json.Unmarshal(body, &mlResp); err == nil {
+				mapping = &mlResp
+				mappingJSON = string(body)
+				if mlResp.TargetTable == "unknown" || mlResp.TargetTable == "" {
+					status = "error"
+				} else {
+					status = "mapped"
+				}
+			} else {
+				log.Printf("[upload] Failed to parse ML response: %v", err)
+			}
+		}
+
+		fileUpload := models.FileUpload{
+			Filename:      fileHeader.Filename,
+			FileType:      fileType,
+			FileSizeBytes: fileHeader.Size,
+			Status:        status,
+			RowCount:      len(parsed.Rows),
+			ColumnsMapped: parsed.Headers,
+			MappingResult: mappingJSON,
+			SavedPath:     savedPath,
+		}
+
+		if err := database.DB.Create(&fileUpload).Error; err != nil {
 			log.Printf("[upload] Failed to insert file record: %v", err)
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to store file record"})
 			return
 		}
 
-		// Store validation errors
-		for i := range allErrors {
-			allErrors[i].FileID = fileID
-			_, err := database.DB.Exec(`
-				INSERT INTO validation_errors (file_id, row_number, column_name, error_type, severity, original_value, suggested_value, resolved)
-				VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-				fileID, allErrors[i].RowNumber, allErrors[i].ColumnName,
-				allErrors[i].ErrorType, allErrors[i].Severity,
-				allErrors[i].OriginalValue, allErrors[i].SuggestedValue, "pending",
-			)
-			if err != nil {
-				log.Printf("[upload] Failed to insert validation error: %v", err)
-			}
-		}
-
-		// Build response
-		fileUpload := models.FileUpload{
-			ID:            fileID,
-			Filename:      fileHeader.Filename,
-			FileType:      fileType,
-			FileSizeBytes: fileHeader.Size,
-			QualityScore:  score.Overall,
-			Completeness:  score.Completeness,
-			Accuracy:      score.Accuracy,
-			Consistency:   score.Consistency,
-			Timeliness:    score.Timeliness,
-			Status:        status,
-			RowCount:      len(parsed.Rows),
-			ErrorCount:    errorCount,
-			ColumnsMapped: columnsMapped,
-		}
-
-		// Fetch stored errors with IDs
-		storedErrors := fetchErrorsForFile(fileID)
-
 		results = append(results, models.UploadResponse{
-			File:   fileUpload,
-			Errors: storedErrors,
+			File:    fileUpload,
+			Mapping: mapping,
 		})
 
-		log.Printf("[upload] Processed %s: score=%.1f status=%s rows=%d errors=%d",
-			fileHeader.Filename, score.Overall, status, len(parsed.Rows), errorCount)
+		log.Printf("[upload] Processed %s: status=%s rows=%d sample20=%v",
+			fileHeader.Filename, status, len(parsed.Rows), sample20)
 	}
 
 	c.JSON(http.StatusOK, results)
-}
-
-func fetchErrorsForFile(fileID int64) []models.ValidationError {
-	rows, err := database.DB.Query(`
-		SELECT id, file_id, row_number, column_name, error_type, severity, original_value, suggested_value, resolved, resolved_at
-		FROM validation_errors WHERE file_id = $1 ORDER BY row_number`, fileID)
-	if err != nil {
-		log.Printf("[upload] Failed to fetch errors: %v", err)
-		return nil
-	}
-	defer rows.Close()
-
-	var errors []models.ValidationError
-	for rows.Next() {
-		var e models.ValidationError
-		var resolvedAt *string
-		if err := rows.Scan(&e.ID, &e.FileID, &e.RowNumber, &e.ColumnName, &e.ErrorType, &e.Severity, &e.OriginalValue, &e.SuggestedValue, &e.Resolved, &resolvedAt); err != nil {
-			continue
-		}
-		errors = append(errors, e)
-	}
-	return errors
 }

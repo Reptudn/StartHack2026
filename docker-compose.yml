@@ -1,57 +1,94 @@
-version: "3.8"
-
 services:
   api:
     build:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
-    env_file:
-      - ./api/.env.dev
+      - "${PORT:-8080}:8080"
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      PORT: "8080"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: ${DB_USER:-healthmap}
+      DB_PASSWORD: ${DB_PASSWORD:-healthmap_dev}
+      DB_NAME: ${DB_NAME:-healthmap}
+      DB_SSLMODE: ${DB_SSLMODE:-disable}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4242}
+      UPLOAD_DIR: ./uploads
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-50}
+      ML_SERVICE_URL: http://ml:5001
     depends_on:
       postgres:
         condition: service_healthy
+      ml:
+        condition: service_started
     volumes:
       - uploads:/data/uploads
     restart: unless-stopped
     networks:
-      - api
+      - app
 
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: healthmap
-      POSTGRES_PASSWORD: healthmap_dev
-      POSTGRES_DB: healthmap
+      POSTGRES_USER: ${DB_USER:-healthmap}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-healthmap_dev}
+      POSTGRES_DB: ${DB_NAME:-healthmap}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U healthmap" ]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-healthmap}"]
       interval: 5s
       timeout: 5s
       retries: 5
     restart: unless-stopped
     networks:
-      - api
+      - app
+
+  ml:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3.5:0.8b}
+    depends_on:
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - app
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - app
 
   web:
     build:
       context: ./web
       dockerfile: Dockerfile
     ports:
-      - "4242:4242"
-    environment:
-      - VITE_API_URL=http://localhost:8080
+      - "${WEB_PORT:-4242}:4242"
     depends_on:
       - api
     restart: unless-stopped
+    networks:
+      - app
 
 volumes:
   pgdata:
   uploads:
-
+  ollama_data:
 
 networks:
-  api:
+  app:
     driver: bridge
