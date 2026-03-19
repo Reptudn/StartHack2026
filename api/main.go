@@ -34,13 +34,17 @@ func main() {
 	r.Use(middleware.CORS(cfg.CORSOrigins))
 	r.MaxMultipartMemory = cfg.MaxUploadMB << 20
 
-	r.GET("/api/health", func(c *gin.Context) {
+	healthCheck := func(c *gin.Context) {
 		c.JSON(200, models.HealthResponse{
 			Status:  "ok",
 			Env:     cfg.AppEnv,
 			Version: version,
 		})
-	})
+	}
+
+	r.GET("/", healthCheck)
+	r.GET("/api", healthCheck)
+	r.GET("/api/health", healthCheck)
 
 	uploadHandler := handlers.NewUploadHandler(cfg)
 
