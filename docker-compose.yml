@@ -78,6 +78,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "${WEB_PORT:-4242}:4242"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
     depends_on:
       - api
     restart: unless-stopped
