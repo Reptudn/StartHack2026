@@ -18,6 +18,17 @@ type SchemaTable struct {
 // GetSchema handles GET /api/schema
 // It reads db/schema.sql and extracts table names and columns.
 func GetSchema(c *gin.Context) {
+	tables, err := loadSchemaTables()
+	if err != nil {
+		log.Printf("[schema] Could not read schema.sql: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read database schema file"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"tables": tables})
+}
+
+func loadSchemaTables() ([]SchemaTable, error) {
 	// Attempt to locate schema.sql
 	// Usually running from api/ or root, so we check a couple paths
 	paths := []string{
@@ -36,13 +47,10 @@ func GetSchema(c *gin.Context) {
 	}
 
 	if err != nil {
-		log.Printf("[schema] Could not read schema.sql: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read database schema file"})
-		return
+		return nil, err
 	}
 
-	tables := parseSchemaSQL(string(content))
-	c.JSON(http.StatusOK, gin.H{"tables": tables})
+	return parseSchemaSQL(string(content)), nil
 }
 
 func parseSchemaSQL(sql string) []SchemaTable {

@@ -25,6 +25,13 @@ services:
         condition: service_started
     volumes:
       - uploads:/data/uploads
+      - ./db:/app/db:ro  # schema.sql needed by mapping diagnostics
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     restart: unless-stopped
     networks:
       - app
@@ -52,7 +59,7 @@ services:
       dockerfile: Dockerfile
     environment:
       OLLAMA_URL: http://ollama:11434
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:3b}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
       GO_API_URL: http://api:${PORT:-8080}
     depends_on:
       ollama-pull:
@@ -78,7 +85,7 @@ services:
     image: ollama/ollama:latest
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    command: pull ${OLLAMA_MODEL:-qwen2.5:3b}
+    command: pull ${OLLAMA_MODEL:-qwen2.5:1.5b}
     depends_on:
       ollama:
         condition: service_healthy

@@ -2,19 +2,31 @@ package models
 
 import "time"
 
+// Processing step constants
+const (
+	StepExtracting  = "extracting"
+	StepInspecting  = "inspecting"
+	StepClassifying = "classifying"
+	StepMapping     = "mapping"
+	StepCompleted   = "completed"
+	StepFailed      = "failed"
+)
+
 // ========== Database Models ==========
 
 type FileUpload struct {
-	ID            int64     `json:"id" gorm:"primaryKey;autoIncrement"`
-	Filename      string    `json:"filename" gorm:"not null;type:varchar(500)"`
-	FileType      string    `json:"file_type" gorm:"not null;type:varchar(10)"`
-	FileSizeBytes int64     `json:"file_size_bytes" gorm:"not null"`
-	UploadedAt    time.Time `json:"uploaded_at" gorm:"default:now()"`
-	Status        string    `json:"status" gorm:"default:'processing';type:varchar(20)"`
-	RowCount      int       `json:"row_count" gorm:"default:0"`
-	MappingResult string    `json:"mapping_result" gorm:"type:jsonb"`
-	SavedPath     string    `json:"saved_path" gorm:"type:varchar(500)"`
-	JobID         string    `json:"job_id" gorm:"type:varchar(64)"`
+	ID             int64     `json:"id" gorm:"primaryKey;autoIncrement"`
+	Filename       string    `json:"filename" gorm:"not null;type:varchar(500)"`
+	FileType       string    `json:"file_type" gorm:"not null;type:varchar(10)"`
+	FileSizeBytes  int64     `json:"file_size_bytes" gorm:"not null"`
+	UploadedAt     time.Time `json:"uploaded_at" gorm:"default:now()"`
+	Status         string    `json:"status" gorm:"default:'processing';type:varchar(20)"`
+	ProcessingStep string    `json:"processing_step" gorm:"default:'extracting';type:varchar(20)"`
+	RowCount       int       `json:"row_count" gorm:"default:0"`
+	ColumnsMapped  []string  `json:"columns_mapped" gorm:"type:jsonb;serializer:json"`
+	MappingResult  string    `json:"mapping_result" gorm:"type:jsonb"`
+	SavedPath      string    `json:"saved_path" gorm:"type:varchar(500)"`
+	JobID          string    `json:"job_id" gorm:"type:varchar(64)"`
 }
 
 func (FileUpload) TableName() string {
@@ -30,7 +42,8 @@ type ValidationError struct {
 	Severity       string     `json:"severity" gorm:"default:'error';type:varchar(10)"`
 	OriginalValue  string     `json:"original_value" gorm:"type:text"`
 	SuggestedValue string     `json:"suggested_value" gorm:"type:text"`
-	Resolved       string     `json:"resolved" gorm:"default:'pending';type:varchar(10)"`
+	ManualValue    string     `json:"manual_value" gorm:"type:text"`
+	Resolved       string     `json:"resolved" gorm:"default:'pending';type:varchar(20)"`
 	ResolvedAt     *time.Time `json:"resolved_at,omitempty"`
 }
 

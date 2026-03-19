@@ -109,6 +109,8 @@ async def process_file(
             row_count=0,
             low_confidence=True,
             cache_hit=False,
+            profile=None,
+            anomalies=[],
         )
 
     row_count = meta["row_count"]
@@ -254,6 +256,8 @@ async def process_file(
             row_count=meta["row_count"],
             low_confidence=True,
             cache_hit=classify_cache_hit,
+            profile=profile,
+            anomalies=profile.anomalies,
         )
 
     # ── Stage 4: Map (Agent 2) — cache check first ─────────────────────────

@@ -29,6 +29,11 @@ func NewUploadHandler(cfg *config.Config) *UploadHandler {
 	return &UploadHandler{Config: cfg}
 }
 
+// updateFileStep updates the processing step for a file
+func updateFileStep(fileID int64, step string) {
+	database.DB.Model(&models.FileUpload{}).Where("id = ?", fileID).Update("processing_step", step)
+}
+
 // Upload handles POST /api/upload
 func (h *UploadHandler) Upload(c *gin.Context) {
 	form, err := c.MultipartForm()
@@ -65,10 +70,33 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 			return
 		}
 
+		// Create initial file record with "extracting" step
+		fileUpload := models.FileUpload{
+			Filename:       fileHeader.Filename,
+			FileType:       fileType,
+			FileSizeBytes:  fileHeader.Size,
+			Status:         "processing",
+			ProcessingStep: models.StepExtracting,
+			RowCount:       0,
+			ColumnsMapped:  []string{},
+			MappingResult:  "{}",
+		}
+
+		if err := database.DB.Create(&fileUpload).Error; err != nil {
+			log.Printf("[upload] Failed to create file record: %v", err)
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to store file record"})
+			return
+		}
+
+		// Small delay to show extracting step in UI
+		time.Sleep(500 * time.Millisecond)
+
 		// Save file to disk
 		savedPath := filepath.Join(h.Config.UploadDir, uuid.New().String()+"_"+fileHeader.Filename)
 		src, err := fileHeader.Open()
 		if err != nil {
+			updateFileStep(fileUpload.ID, models.StepFailed)
+			database.DB.Model(&fileUpload).Update("status", "failed")
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to open uploaded file"})
 			return
 		}
@@ -76,21 +104,29 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 
 		dst, err := os.Create(savedPath)
 		if err != nil {
+			updateFileStep(fileUpload.ID, models.StepFailed)
+			database.DB.Model(&fileUpload).Update("status", "failed")
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to save file"})
 			return
 		}
 		defer dst.Close()
 
 		if _, err = io.Copy(dst, src); err != nil {
+			updateFileStep(fileUpload.ID, models.StepFailed)
+			database.DB.Model(&fileUpload).Update("status", "failed")
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to write file"})
 			return
 		}
+
+		// Update to inspecting step
+		updateFileStep(fileUpload.ID, models.StepInspecting)
+		time.Sleep(500 * time.Millisecond)
 
 		// Generate a job ID for progress tracking
 		jobID := uuid.New().String()
 
 		// Create file record in DB immediately with "processing" status
-		fileUpload := models.FileUpload{
+		fileUpload = models.FileUpload{
 			Filename:      fileHeader.Filename,
 			FileType:      fileType,
 			FileSizeBytes: fileHeader.Size,
