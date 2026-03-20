@@ -4,3 +4,7 @@
 .env.prod
 .env.dev
 .ruff_cache/
+.DS_Store
+*.md
+!README.md
+!LICENSE
