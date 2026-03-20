@@ -81,11 +81,12 @@ export default function Dashboard() {
         jobId,
         (progress) => {
           setFileProgress((prev) => ({ ...prev, [fileId]: progress }))
+          // loadFiles() wird hier NICHT aufgerufen, um Race Conditions zu vermeiden
         },
         () => {
+          // SSE-Verbindung geschlossen - nur aufräumen, kein loadFiles()
+          // Das verhindert Duplikate bei Page Reload
           activeSubscriptions.current.delete(fileId)
-          setFileProgress((prev) => ({ ...prev, [fileId]: prev[fileId] }))
-          loadFiles()
         },
       )
       activeSubscriptions.current.set(fileId, unsub)
@@ -106,7 +107,21 @@ export default function Dashboard() {
         }
         return { file: f, mapping }
       })
-      setResults(converted)
+      // Dedupe by filename (API is source of truth, newest files first)
+      setResults((prev) => {
+        const fileMap = new Map<string, UploadResult>()
+        // First add all API files (newest first due to API ordering)
+        converted.forEach((r) => fileMap.set(r.file.filename, r))
+        // Then filter out duplicates from prev that are still in API
+        const prevFiltered = prev.filter((r) => {
+          // Keep prev file if it's not in the API response
+          const existsInApi = apiFiles.some((f) => f.filename === r.file.filename)
+          return !existsInApi
+        })
+        // Merge: API files override local state
+        const merged = [...Array.from(fileMap.values()), ...prevFiltered]
+        return merged
+      })
 
       for (const f of apiFiles) {
         if (f.status === "processing" && f.job_id) {
@@ -170,36 +185,78 @@ export default function Dashboard() {
       setIsUploading(true)
       setUploadStep("extracting")
 
-      const stepTimers: ReturnType<typeof setTimeout>[] = []
-      stepTimers.push(setTimeout(() => setUploadStep("inspecting"), 800))
-      stepTimers.push(setTimeout(() => setUploadStep("classifying"), 1600))
-      stepTimers.push(setTimeout(() => setUploadStep("mapping"), 2400))
-
       try {
         const uploadResults = await apiUpload(newFiles, true)
-
-        stepTimers.forEach(clearTimeout)
-        setUploadStep("completed")
 
         const converted: UploadResult[] = uploadResults.map((r) => ({
           file: r.file,
           mapping: r.mapping,
         }))
-        setResults((prev) => [...converted, ...prev])
+        setResults((prev) => {
+          const existingFiles = new Set(prev.map((r) => r.file.filename))
+          const unique = converted.filter((r) => !existingFiles.has(r.file.filename))
+          // New files go to the front, API order preserved
+          return [...unique, ...prev]
+        })
 
+        // Track first file's progress for upload step indicator
+        const firstResult = uploadResults[0]
+        if (firstResult?.job_id) {
+          const unsub = subscribeToProgress(
+            firstResult.job_id,
+            (progress) => {
+              // Map SSE stage to upload step
+              const stageMap: Record<string, ProcessingStep> = {
+                extract: "extracting",
+                inspect: "inspecting",
+                classify: "classifying",
+                map: "mapping",
+                done: "completed",
+                error: "failed",
+              }
+              const mappedStep = stageMap[progress.stage] || "extracting"
+              setUploadStep(mappedStep)
+
+              if (progress.stage === "done") {
+                setTimeout(() => {
+                  setUploadStep(null)
+                  setIsUploading(false)
+                }, 1500)
+                unsub()
+              } else if (progress.stage === "error") {
+                setTimeout(() => {
+                  setUploadStep(null)
+                  setIsUploading(false)
+                }, 2000)
+                unsub()
+              }
+            },
+            () => {
+              // SSE closed - ensure we're in completed state
+              setUploadStep("completed")
+              setTimeout(() => {
+                setUploadStep(null)
+                setIsUploading(false)
+              }, 1500)
+            },
+          )
+        } else {
+          // No job_id - immediate completion
+          setUploadStep("completed")
+          setTimeout(() => setUploadStep(null), 1500)
+          setIsUploading(false)
+        }
+
+        // Start polling for all files
         for (const result of uploadResults) {
           if (result.job_id) {
             startPollingFile(result.file.id, result.job_id)
           }
         }
-
-        setTimeout(() => setUploadStep(null), 1500)
       } catch (err) {
-        stepTimers.forEach(clearTimeout)
         setUploadStep("failed")
         console.error("Upload failed:", err)
         setTimeout(() => setUploadStep(null), 2000)
-      } finally {
         setIsUploading(false)
       }
     },
@@ -534,7 +591,7 @@ export default function Dashboard() {
             classNames={{
               base: "bg-card border border-border max-h-[90vh]",
               header: "border-b border-border",
-              body: "p-0",
+              body: "p-4",
               closeButton: "text-foreground hover:bg-muted",
             }}
           >

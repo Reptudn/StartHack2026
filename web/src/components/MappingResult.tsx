@@ -25,10 +25,12 @@ import {
   AlertCircle,
   Loader2,
   FileText,
+  Database,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getSchema, importFile, getMappingDiagnostics } from "../api"
 import type { MLMapping, SchemaTable, MappingDiagnosticsResponse, MappingDiagnosticError } from "../api"
+import { TableDataViewer } from "./TableDataViewer"
 
 interface ColumnMapping {
   file_column: string
@@ -74,6 +76,7 @@ export function MappingResult({ mapping, files, selectedFileId, onFileSelect, on
   const [diagnostics, setDiagnostics] = useState<MappingDiagnosticsResponse | null>(null)
   const [diagnosticsLoading, setDiagnosticsLoading] = useState(false)
   const [diagnosticsError, setDiagnosticsError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<"mapping" | "data">("mapping")
 
   useEffect(() => {
     getSchema().then(setSchemas).catch(console.error)
@@ -182,7 +185,7 @@ export function MappingResult({ mapping, files, selectedFileId, onFileSelect, on
                 placeholder="Select table..."
                 selectedKeys={[editedMapping.target_table]}
                 onChange={handleTableChange}
-                className="w-[200px]"
+                className="w-[260px]"
                 variant="bordered"
                 size="sm"
                 classNames={{
@@ -223,7 +226,36 @@ export function MappingResult({ mapping, files, selectedFileId, onFileSelect, on
           </div>
         </div>
       </CardHeader>
+      
+      <div className="flex gap-1 px-6 pt-4 border-b border-border bg-muted/10">
+        <button
+          onClick={() => setActiveTab("mapping")}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2.5 font-medium text-sm rounded-t-lg transition-all",
+            activeTab === "mapping"
+              ? "bg-card text-primary border-t-2 border-x border-primary"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+          )}
+        >
+          <Brain className="h-4 w-4" />
+          Mapping
+        </button>
+        <button
+          onClick={() => setActiveTab("data")}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2.5 font-medium text-sm rounded-t-lg transition-all",
+            activeTab === "data"
+              ? "bg-card text-primary border-t-2 border-x border-primary"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+          )}
+        >
+          <Database className="h-4 w-4" />
+          Imported Data
+        </button>
+      </div>
+      
       <CardBody className="space-y-6">
+        {activeTab === "mapping" ? (
         <div className="flex flex-wrap items-center gap-3">
           <Chip variant="flat" size="sm" className="bg-primary/10 text-primary font-semibold">
             {totalMapped} Mapped
@@ -293,7 +325,7 @@ export function MappingResult({ mapping, files, selectedFileId, onFileSelect, on
                           onChange={(e) => handleColumnChange(cm.file_column, e.target.value)}
                           variant="bordered"
                           size="sm"
-                          className="max-w-[200px]"
+                          className="min-w-[240px]"
                           classNames={{
                             trigger: "bg-card border-border",
                             value: "text-foreground",
@@ -491,6 +523,9 @@ export function MappingResult({ mapping, files, selectedFileId, onFileSelect, on
             </div>
           )}
         </div>
+        ) : (
+          <TableDataViewer tableName={mapping.target_table} />
+        )}
       </CardBody>
     </Card>
   )

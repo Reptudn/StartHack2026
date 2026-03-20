@@ -65,7 +65,7 @@ export default function Landing() {
             <Button 
               color="primary" 
               size="lg" 
-              className="h-14 px-8 text-lg gap-2" 
+              className="h-14 px-8 text-lg gap-2 rounded-full"
               onPress={() => navigate('/dashboard')}
               endContent={<ArrowRight className="h-5 w-5" />}
             >

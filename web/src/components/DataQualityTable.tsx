@@ -185,32 +185,21 @@ export function DataQualityTable({ files, onFixClick, selectedFileId, onRowClick
                       >
                         {selectedFileId === file.id ? "Close" : "Fix"}
                       </Button>
-                    ) : file.status === "valid" ? (
+                    ) : onRowClick ? (
                       <Button
                         variant="bordered"
                         color="primary"
                         size="sm"
                         onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
-                          onRowClick?.(file.id);
+                          onRowClick(file.id);
                         }}
                         className="font-semibold gap-2"
                         startContent={<Eye className="h-3.5 w-3.5" />}
                       >
                         Review
                       </Button>
-                    ) : (
-                      <Button
-                        variant="bordered"
-                        color="default"
-                        size="sm"
-                        disabled
-                        className="font-semibold gap-2 opacity-50"
-                        startContent={<Eye className="h-3.5 w-3.5" />}
-                      >
-                        Review
-                      </Button>
-                    )}
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}

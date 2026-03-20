@@ -67,6 +67,13 @@ func main() {
 		api.GET("/cache", handlers.GetCache)
 		api.POST("/cache", handlers.PostCache)
 
+		// Table data CRUD
+		api.GET("/tables", handlers.ListTables)
+		api.GET("/tables/:name/data", handlers.GetTableData)
+		api.GET("/tables/:name/columns", handlers.GetTableColumns)
+		api.PUT("/tables/:name/rows/:id", handlers.UpdateTableRow)
+		api.DELETE("/tables/:name/rows/:id", handlers.DeleteTableRow)
+
 		// Job progress (SSE)
 		api.POST("/jobs/:id/progress", handlers.PostProgress)
 		api.GET("/jobs/:id/stream", handlers.StreamProgress)

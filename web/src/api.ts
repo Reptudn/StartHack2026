@@ -268,3 +268,66 @@ export async function reprocessFile(fileId: number): Promise<{ job_id: string }>
   }
   return res.json()
 }
+
+export interface TableRow {
+  id: number
+  [key: string]: unknown
+}
+
+export interface TableDataResponse {
+  table: string
+  rows: TableRow[]
+  total: number
+  page: number
+  page_size: number
+}
+
+export async function getTableData(
+  tableName: string,
+  options?: { page?: number; limit?: number }
+): Promise<TableDataResponse> {
+  const params = new URLSearchParams()
+  if (options?.page) params.set('page', options.page.toString())
+  if (options?.limit) params.set('limit', options.limit.toString())
+  
+  const res = await fetch(`${API_URL}/api/tables/${tableName}/data?${params}`)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || 'Failed to fetch table data')
+  }
+  return res.json()
+}
+
+export async function updateTableRow(
+  tableName: string,
+  rowId: number,
+  data: Record<string, unknown>
+): Promise<{ message: string }> {
+  const res = await fetch(`${API_URL}/api/tables/${tableName}/rows/${rowId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || 'Failed to update row')
+  }
+  return res.json()
+}
+
+export async function deleteTableRow(
+  tableName: string,
+  rowId: number
+): Promise<{ message: string }> {
+  const res = await fetch(`${API_URL}/api/tables/${tableName}/rows/${rowId}`, {
+    method: 'DELETE',
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || 'Failed to delete row')
+  }
+  return res.json()
+}
+}
