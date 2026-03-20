@@ -19,7 +19,6 @@ import {
   ModalFooter,
 } from '@heroui/react'
 import { Pencil, Trash2, Check, X, Loader2, AlertCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { getTableData, updateTableRow, deleteTableRow } from '../api'
 import type { TableDataResponse } from '../api'
 
@@ -156,82 +155,54 @@ export function TableDataViewer({ tableName }: { tableName: string }) {
           }}
         >
           <TableHeader>
-            {columns.map(col => (
-              <TableColumn key={col}>
-                <code className="text-xs">{col}</code>
+            {[...columns, '_actions'].map(col => (
+              <TableColumn key={col} className={col === '_actions' ? "text-right w-32" : ""}>
+                {col === '_actions' ? 'Actions' : <code className="text-xs">{col}</code>}
               </TableColumn>
-            ))}
-            <TableColumn className="text-right w-32">Actions</TableColumn>
+            )) as any}
           </TableHeader>
           <TableBody>
             {data.rows.map(row => (
               <TableRow key={row.id}>
-                {columns.map(col => (
+                {[...columns, '_actions'].map(col => (
                   <TableCell key={col}>
-                    {editingRow === row.id ? (
+                    {col === '_actions' ? (
+                      editingRow === row.id ? (
+                        <div className="flex justify-end gap-1">
+                          <Button isIconOnly color="success" size="sm" onPress={saveEdit} className="text-success-foreground">
+                            <Check className="h-4 w-4" />
+                          </Button>
+                          <Button isIconOnly color="danger" variant="light" size="sm" onPress={cancelEdit}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex justify-end gap-1">
+                          <Button isIconOnly variant="light" size="sm" onPress={() => startEdit(row)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button isIconOnly variant="light" color="danger" size="sm" onPress={() => confirmDelete(row.id as number)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )
+                    ) : editingRow === row.id ? (
                       <Input
                         size="sm"
                         variant="bordered"
-                        value={String(row[col] ?? '')}
+                        value={String(editForm[col] ?? (row as Record<string, unknown>)[col] ?? '')}
                         onChange={(e) => setEditForm(prev => ({ ...prev, [col]: e.target.value }))}
-                        classNames={{
-                          input: "text-sm",
-                          inputWrapper: "min-w-[100px]"
-                        }}
+                        classNames={{ input: "text-sm", inputWrapper: "min-w-[100px]" }}
                       />
                     ) : (
                       <code className="text-sm whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] block">
-                        {row[col] === null || row[col] === undefined ? (
+                        {(row as Record<string, unknown>)[col] === null || (row as Record<string, unknown>)[col] === undefined ? (
                           <span className="text-muted-foreground italic">NULL</span>
-                        ) : String(row[col])}
+                        ) : String((row as Record<string, unknown>)[col])}
                       </code>
                     )}
                   </TableCell>
-                ))}
-                <TableCell className="text-right">
-                  {editingRow === row.id ? (
-                    <div className="flex justify-end gap-1">
-                      <Button 
-                        isIconOnly 
-                        color="success" 
-                        size="sm" 
-                        onPress={saveEdit}
-                        className="text-success-foreground"
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        isIconOnly 
-                        color="danger" 
-                        variant="light" 
-                        size="sm" 
-                        onPress={cancelEdit}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex justify-end gap-1">
-                      <Button 
-                        isIconOnly 
-                        variant="light" 
-                        size="sm" 
-                        onPress={() => startEdit(row)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        isIconOnly 
-                        variant="light" 
-                        color="danger" 
-                        size="sm" 
-                        onPress={() => confirmDelete(row.id as number)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </TableCell>
+                )) as any}
               </TableRow>
             ))}
           </TableBody>

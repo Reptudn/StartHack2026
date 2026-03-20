@@ -233,7 +233,7 @@ export async function getSchema(): Promise<SchemaTable[]> {
   return data.tables
 }
 
-export async function importFile(fileId: number, mapping: MLMapping): Promise<{ message: string; rows_inserted: number }> {
+export async function importFile(fileId: number, mapping: MLMapping): Promise<{ message: string; rows_inserted: number; rows_skipped: number }> {
   const res = await fetch(`${API_URL}/api/files/${fileId}/import`, {
     method: 'POST',
     headers: {
@@ -329,5 +329,4 @@ export async function deleteTableRow(
     throw new Error(err.error || 'Failed to delete row')
   }
   return res.json()
-}
 }

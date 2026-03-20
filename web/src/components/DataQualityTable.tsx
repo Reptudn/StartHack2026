@@ -1,10 +1,11 @@
 "use client"
 
-import { 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  Button, 
+import { useState, useMemo } from "react"
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Button,
   Chip,
   Table,
   TableHeader,
@@ -12,8 +13,9 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Input,
 } from "@heroui/react"
-import { Wrench, ChevronDown, ChevronUp, BarChart3, FileText, Eye } from "lucide-react"
+import { Wrench, ChevronDown, ChevronUp, BarChart3, FileText, Eye, Search, ArrowUpDown } from "lucide-react"
 import type { UploadedFile } from "./FileUpload"
 import { cn } from "@/lib/utils"
 
@@ -24,6 +26,9 @@ interface DataQualityTableProps {
   onRowClick?: (fileId: string) => void
   activeRowId?: string | null
 }
+
+type SortKey = "name" | "status" | "completeness" | "errorCount"
+type SortDir = "asc" | "desc"
 
 function getCompletenessClass(value: number) {
   if (value >= 80) return "text-primary"
@@ -38,6 +43,48 @@ function getCompletenessBarClass(value: number) {
 }
 
 export function DataQualityTable({ files, onFixClick, selectedFileId, onRowClick, activeRowId }: DataQualityTableProps) {
+  const [search, setSearch] = useState("")
+  const [sortKey, setSortKey] = useState<SortKey>("name")
+  const [sortDir, setSortDir] = useState<SortDir>("asc")
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(d => d === "asc" ? "desc" : "asc")
+    } else {
+      setSortKey(key)
+      setSortDir("asc")
+    }
+  }
+
+  const filteredFiles = useMemo(() => {
+    let result = files
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      result = result.filter(f => f.name.toLowerCase().includes(q))
+    }
+    result = [...result].sort((a, b) => {
+      let cmp = 0
+      switch (sortKey) {
+        case "name": cmp = a.name.localeCompare(b.name); break
+        case "status": cmp = a.status.localeCompare(b.status); break
+        case "completeness": cmp = a.completeness - b.completeness; break
+        case "errorCount": cmp = a.errorCount - b.errorCount; break
+      }
+      return sortDir === "asc" ? cmp : -cmp
+    })
+    return result
+  }, [files, search, sortKey, sortDir])
+
+  const SortButton = ({ field, children }: { field: SortKey; children: React.ReactNode }) => (
+    <button
+      onClick={() => toggleSort(field)}
+      className="flex items-center gap-1 hover:text-foreground transition-colors"
+    >
+      {children}
+      <ArrowUpDown className={cn("h-3 w-3", sortKey === field ? "text-primary" : "text-muted-foreground/50")} />
+    </button>
+  )
+
   if (files.length === 0) {
     return (
       <Card className="border border-border bg-card shadow-sm rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
@@ -67,21 +114,36 @@ export function DataQualityTable({ files, onFixClick, selectedFileId, onRowClick
   return (
     <Card className="border border-border bg-card shadow-sm rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
       <CardHeader className="border-b border-border">
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-between w-full gap-4">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <BarChart3 className="h-4 w-4 text-primary" />
             </div>
             <p className="text-lg font-semibold">Data Quality Analysis</p>
+            <Chip variant="flat" className="bg-primary/10 text-primary font-semibold">
+              {files.length} file{files.length !== 1 ? "s" : ""}
+            </Chip>
           </div>
-          <Chip variant="flat" className="bg-primary/10 text-primary font-semibold">
-            {files.length} file{files.length !== 1 ? "s" : ""}
-          </Chip>
+          <Input
+            placeholder="Search files..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            startContent={<Search className="h-4 w-4 text-muted-foreground" />}
+            size="sm"
+            variant="bordered"
+            className="max-w-[240px]"
+            classNames={{
+              inputWrapper: "bg-card border-border",
+              input: "text-sm",
+            }}
+            isClearable
+            onClear={() => setSearch("")}
+          />
         </div>
       </CardHeader>
       <CardBody className="p-0">
         <div className="overflow-x-auto">
-          <Table 
+          <Table
             aria-label="Data Quality Analysis Table"
             shadow="none"
             removeWrapper
@@ -91,118 +153,130 @@ export function DataQualityTable({ files, onFixClick, selectedFileId, onRowClick
             }}
           >
             <TableHeader>
-              <TableColumn>File Name</TableColumn>
+              <TableColumn><SortButton field="name">File Name</SortButton></TableColumn>
               <TableColumn>Columns Mapped</TableColumn>
-              <TableColumn>Data Completeness</TableColumn>
-              <TableColumn className="text-center">Anomalies</TableColumn>
+              <TableColumn><SortButton field="completeness">Data Completeness</SortButton></TableColumn>
+              <TableColumn className="text-center"><SortButton field="errorCount">Anomalies</SortButton></TableColumn>
               <TableColumn className="text-right">Action</TableColumn>
             </TableHeader>
             <TableBody>
-              {files.map((file) => (
-                <TableRow 
-                  key={file.id}
-                  onClick={() => onRowClick?.(file.id)}
-                  className={cn(
-                    "transition-all duration-200 cursor-pointer border-b border-border last:border-none",
-                    "hover:bg-muted/30",
-                    selectedFileId === file.id && "bg-primary/5",
-                    activeRowId === file.id && "bg-primary/10 border-l-3 border-l-primary"
-                  )}
-                >
+              {filteredFiles.length === 0 ? (
+                <TableRow key="empty">
+                  <TableCell><span /></TableCell>
+                  <TableCell><span /></TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
-                        <FileText className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <span className="font-semibold text-sm truncate max-w-[200px]">{file.name}</span>
-                    </div>
+                    <p className="text-sm text-muted-foreground text-center py-4">No files match &ldquo;{search}&rdquo;</p>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1.5 max-w-[220px]">
-                      {file.columnsMapped.slice(0, 3).map((col: string) => (
-                        <Chip 
-                          key={col} 
-                          variant="flat" 
-                          size="sm" 
-                          className="text-xs font-medium bg-muted/50 text-foreground h-6"
-                        >
-                          {col}
-                        </Chip>
-                      ))}
-                      {file.columnsMapped.length > 3 && (
-                        <Chip 
-                          variant="flat" 
-                          size="sm" 
-                          className="text-xs font-medium bg-primary/10 text-primary h-6"
-                        >
-                          +{file.columnsMapped.length - 3}
-                        </Chip>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3 min-w-[180px]">
-                      <div className="flex-1">
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div 
-                            className={cn("h-full rounded-full transition-all duration-500", getCompletenessBarClass(file.completeness))}
-                            style={{ width: `${file.completeness}%` }}
-                          />
-                        </div>
-                      </div>
-                      <span className={cn("text-sm font-bold tabular-nums w-12", getCompletenessClass(file.completeness))}>
-                        {file.completeness}%
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Chip 
-                      variant="flat"
-                      size="sm"
-                      className={cn(
-                        "font-semibold",
-                        file.errorCount > 0 
-                          ? "bg-destructive/10 text-destructive" 
-                          : "bg-primary/10 text-primary"
-                      )}
-                    >
-                      {file.errorCount}
-                    </Chip>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {file.errorCount > 0 ? (
-                      <Button
-                        variant="solid"
-                        color="primary"
-                        size="sm"
-                        onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation();
-                          onFixClick(file.id);
-                        }}
-                        className="font-semibold gap-2 shadow-md hover:shadow-lg"
-                        startContent={<Wrench className="h-3.5 w-3.5" />}
-                        endContent={selectedFileId === file.id ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                      >
-                        {selectedFileId === file.id ? "Close" : "Fix"}
-                      </Button>
-                    ) : onRowClick ? (
-                      <Button
-                        variant="bordered"
-                        color="primary"
-                        size="sm"
-                        onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation();
-                          onRowClick(file.id);
-                        }}
-                        className="font-semibold gap-2"
-                        startContent={<Eye className="h-3.5 w-3.5" />}
-                      >
-                        Review
-                      </Button>
-                    ) : null}
-                  </TableCell>
+                  <TableCell><span /></TableCell>
+                  <TableCell><span /></TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredFiles.map((file) => (
+                  <TableRow
+                    key={file.id}
+                    onClick={() => onRowClick?.(file.id)}
+                    className={cn(
+                      "transition-all duration-200 cursor-pointer border-b border-border last:border-none",
+                      "hover:bg-muted/30",
+                      selectedFileId === file.id && "bg-primary/5",
+                      activeRowId === file.id && "bg-primary/10 border-l-3 border-l-primary"
+                    )}
+                  >
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <span className="font-semibold text-sm truncate max-w-[200px]">{file.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1.5 max-w-[220px]">
+                        {file.columnsMapped.slice(0, 3).map((col: string) => (
+                          <Chip
+                            key={col}
+                            variant="flat"
+                            size="sm"
+                            className="text-xs font-medium bg-muted/50 text-foreground h-6"
+                          >
+                            {col}
+                          </Chip>
+                        ))}
+                        {file.columnsMapped.length > 3 && (
+                          <Chip
+                            variant="flat"
+                            size="sm"
+                            className="text-xs font-medium bg-primary/10 text-primary h-6"
+                          >
+                            +{file.columnsMapped.length - 3}
+                          </Chip>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3 min-w-[180px]">
+                        <div className="flex-1">
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={cn("h-full rounded-full transition-all duration-500", getCompletenessBarClass(file.completeness))}
+                              style={{ width: `${file.completeness}%` }}
+                            />
+                          </div>
+                        </div>
+                        <span className={cn("text-sm font-bold tabular-nums w-12", getCompletenessClass(file.completeness))}>
+                          {file.completeness}%
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Chip
+                        variant="flat"
+                        size="sm"
+                        className={cn(
+                          "font-semibold",
+                          file.errorCount > 0
+                            ? "bg-destructive/10 text-destructive"
+                            : "bg-primary/10 text-primary"
+                        )}
+                      >
+                        {file.errorCount}
+                      </Chip>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {file.errorCount > 0 ? (
+                        <Button
+                          variant="solid"
+                          color="primary"
+                          size="sm"
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            onFixClick(file.id);
+                          }}
+                          className="font-semibold gap-2 shadow-md hover:shadow-lg"
+                          startContent={<Wrench className="h-3.5 w-3.5" />}
+                          endContent={selectedFileId === file.id ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                        >
+                          {selectedFileId === file.id ? "Close" : "Fix"}
+                        </Button>
+                      ) : onRowClick ? (
+                        <Button
+                          variant="bordered"
+                          color="primary"
+                          size="sm"
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            onRowClick(file.id);
+                          }}
+                          className="font-semibold gap-2"
+                          startContent={<Eye className="h-3.5 w-3.5" />}
+                        >
+                          Review
+                        </Button>
+                      ) : null}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

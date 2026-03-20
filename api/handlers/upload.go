@@ -125,21 +125,12 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 		// Generate a job ID for progress tracking
 		jobID := uuid.New().String()
 
-		// Create file record in DB immediately with "processing" status
-		fileUpload = models.FileUpload{
-			Filename:      fileHeader.Filename,
-			FileType:      fileType,
-			FileSizeBytes: fileHeader.Size,
-			Status:        "processing",
-			RowCount:      0,
-			MappingResult: "{}",
-			SavedPath:     savedPath,
-			JobID:         jobID,
-		}
-
-		if err := database.DB.Create(&fileUpload).Error; err != nil {
-			log.Printf("[upload] Failed to insert file record: %v", err)
-			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to store file record"})
+		// Update the existing record with saved path and job ID
+		fileUpload.SavedPath = savedPath
+		fileUpload.JobID = jobID
+		if err := database.DB.Save(&fileUpload).Error; err != nil {
+			log.Printf("[upload] Failed to update file record: %v", err)
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to update file record"})
 			return
 		}
 

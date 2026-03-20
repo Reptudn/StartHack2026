@@ -41,6 +41,15 @@ func BulkImport(fileRecord models.FileUpload, mapping models.MLProcessResponse) 
 		return ImportResult{}, fmt.Errorf("could not parse file: %w", err)
 	}
 
+	// Check if the mapping includes coCaseId — only enforce it as required if it was mapped
+	hasCaseIdMapping := false
+	for _, colMap := range mapping.ColumnMappings {
+		if strings.EqualFold(colMap.DBColumn, "coCaseId") && colMap.DBColumn != "unknown" {
+			hasCaseIdMapping = true
+			break
+		}
+	}
+
 	var batch []map[string]interface{}
 	skippedMissing := 0
 
@@ -58,10 +67,12 @@ func BulkImport(fileRecord models.FileUpload, mapping models.MLProcessResponse) 
 			}
 		}
 
-		// Enforce required field: coCaseId must be present
-		if _, hasCaseId := rowMap["coCaseId"]; !hasCaseId {
-			skippedMissing++
-			continue
+		// Only enforce coCaseId as required if the mapping actually included it
+		if hasCaseIdMapping {
+			if _, hasCaseId := rowMap["coCaseId"]; !hasCaseId {
+				skippedMissing++
+				continue
+			}
 		}
 
 		if len(rowMap) > 0 {

@@ -68,7 +68,7 @@ func GetTableData(c *gin.Context) {
 	err := database.DB.Table(tableName).
 		Limit(limit).
 		Offset(offset).
-		Order("id DESC").
+		Order("\"coId\" DESC").
 		Find(&rows).Error
 
 	if err != nil {
@@ -112,7 +112,7 @@ func UpdateTableRow(c *gin.Context) {
 		return
 	}
 
-	result := database.DB.Table(tableName).Where("id = ?", id).Updates(updates)
+	result := database.DB.Table(tableName).Where("\"coId\" = ?", id).Updates(updates)
 
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Update failed: " + result.Error.Error()})
@@ -140,7 +140,7 @@ func DeleteTableRow(c *gin.Context) {
 		return
 	}
 
-	result := database.DB.Table(tableName).Where("id = ?", id).Delete(nil)
+	result := database.DB.Table(tableName).Where("\"coId\" = ?", id).Delete(nil)
 
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Delete failed: " + result.Error.Error()})

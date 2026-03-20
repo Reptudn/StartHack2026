@@ -51,6 +51,8 @@ function getStepIndex(step: ProcessingStep): number {
 function ProcessingSteps({ currentStep }: { currentStep: ProcessingStep }) {
   const currentIndex = getStepIndex(currentStep)
   const progress = currentStep === 'completed' ? 100 : currentStep === 'failed' ? 0 : ((currentIndex + 1) / STEPS.length) * 100
+  // Cap the line progress at 100% (completed state can push currentIndex beyond STEPS.length - 1)
+  const lineProgress = Math.min(100, Math.max(0, (currentIndex / (STEPS.length - 1)) * 100))
 
   return (
     <div className="w-full space-y-4">
@@ -58,9 +60,9 @@ function ProcessingSteps({ currentStep }: { currentStep: ProcessingStep }) {
       <div className="flex items-center justify-between relative">
         {/* Connection line behind dots */}
         <div className="absolute top-3 left-6 right-6 h-0.5 bg-muted" />
-        <div 
+        <div
           className="absolute top-3 left-6 h-0.5 bg-primary transition-all duration-500 ease-out"
-          style={{ width: `calc(${Math.max(0, (currentIndex / (STEPS.length - 1)) * 100)}% - 48px)` }}
+          style={{ width: `calc(${lineProgress}% - 48px)` }}
         />
         
         {STEPS.map((step, index) => {

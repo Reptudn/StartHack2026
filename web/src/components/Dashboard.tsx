@@ -63,6 +63,7 @@ export default function Dashboard() {
   const [reprocessing, setReprocessing] = useState<Set<number>>(new Set())
 
   const activeSubscriptions = useRef<Map<number, () => void>>(new Map())
+  const loadFilesRef = useRef<() => Promise<void>>(() => Promise.resolve())
 
   const startPollingFile = useCallback((fileId: number, jobId: string) => {
     if (activeSubscriptions.current.has(fileId)) return
@@ -70,6 +71,7 @@ export default function Dashboard() {
     getJobProgress(jobId).then((p) => {
       if (p && (p.stage === "done" || p.stage === "error")) {
         setFileProgress((prev) => ({ ...prev, [fileId]: p }))
+        loadFilesRef.current()
         return
       }
 
@@ -81,12 +83,11 @@ export default function Dashboard() {
         jobId,
         (progress) => {
           setFileProgress((prev) => ({ ...prev, [fileId]: progress }))
-          // loadFiles() wird hier NICHT aufgerufen, um Race Conditions zu vermeiden
         },
         () => {
-          // SSE-Verbindung geschlossen - nur aufräumen, kein loadFiles()
-          // Das verhindert Duplikate bei Page Reload
           activeSubscriptions.current.delete(fileId)
+          // Reload files to get the final status and mapping from the DB
+          loadFilesRef.current()
         },
       )
       activeSubscriptions.current.set(fileId, unsub)
@@ -132,6 +133,11 @@ export default function Dashboard() {
       console.error("Failed to load files:", err)
     }
   }, [startPollingFile])
+
+  // Keep ref in sync so startPollingFile can call loadFiles without circular deps
+  useEffect(() => {
+    loadFilesRef.current = loadFiles
+  }, [loadFiles])
 
   useEffect(() => {
     return () => {
@@ -284,19 +290,30 @@ export default function Dashboard() {
       mapped: { className: "bg-primary/10 text-primary", label: "Mapped" },
       imported: { className: "bg-primary/10 text-primary", label: "Imported" },
       processing: { className: "bg-warning/10 text-warning", label: "Processing" },
-      review: { className: "bg-chart-3/10 text-chart-3", label: "Review" },
+      review: { className: "bg-chart-3/10 text-chart-3", label: "Needs Review" },
       failed: { className: "bg-destructive/10 text-destructive", label: "Failed" },
       error: { className: "bg-destructive/10 text-destructive", label: "Error" },
     }
     const s = statusMap[status] || { className: "bg-muted text-muted-foreground", label: status }
 
     const progress = fileId ? fileProgress[fileId] : undefined
-    const label = progress && status === "processing"
-      ? `${progress.stage.charAt(0).toUpperCase() + progress.stage.slice(1)}...`
-      : s.label
+    let label = s.label
+    let chipClass = s.className
+
+    if (progress && status === "processing") {
+      if (progress.stage === "done") {
+        label = "Ready"
+        chipClass = "bg-primary/10 text-primary"
+      } else if (progress.stage === "error") {
+        label = "Failed"
+        chipClass = "bg-destructive/10 text-destructive"
+      } else {
+        label = `${progress.stage.charAt(0).toUpperCase() + progress.stage.slice(1)}...`
+      }
+    }
 
     return (
-      <Chip variant="flat" size="sm" className={cn("font-medium", s.className)}>
+      <Chip variant="flat" size="sm" className={cn("font-medium", chipClass)}>
         {label}
       </Chip>
     )
@@ -429,21 +446,30 @@ export default function Dashboard() {
                       </div>
                     ) : (
                       <div className="grid gap-3 sm:grid-cols-2">
-                        {results.slice(0, 4).map((r) => (
-                          <div
-                            key={r.file.id}
-                            className="flex items-center gap-3 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-200 cursor-pointer border border-transparent hover:border-border"
-                          >
-                            <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center">
-                              <FileText className="h-5 w-5 text-primary" />
+                        {results.slice(0, 4).map((r) => {
+                          const targetTable = r.mapping?.target_table
+                          const mappedCount = r.mapping?.column_mappings?.filter(cm => cm.db_column && cm.db_column !== "unknown").length ?? 0
+                          return (
+                            <div
+                              key={r.file.id}
+                              onClick={() => r.mapping ? handleOpenMappingModal(r.file.id.toString()) : undefined}
+                              className="flex items-center gap-3 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-200 cursor-pointer border border-transparent hover:border-border"
+                            >
+                              <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <FileText className="h-5 w-5 text-primary" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm truncate">{r.file.filename}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {r.file.row_count > 0 ? `${r.file.row_count.toLocaleString()} rows` : "Processing..."}
+                                  {targetTable && ` · ${targetTable}`}
+                                  {mappedCount > 0 && ` · ${mappedCount} cols`}
+                                </p>
+                              </div>
+                              {getStatusChip(r.file.status, r.file.id)}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm truncate">{r.file.filename}</p>
-                              <p className="text-xs text-muted-foreground">{r.file.row_count} rows processed</p>
-                            </div>
-                            {getStatusChip(r.file.status, r.file.id)}
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     )}
                   </CardBody>
@@ -456,12 +482,14 @@ export default function Dashboard() {
                     size: r.file.file_size_bytes,
                     type: r.file.file_type,
                     status:
-                      r.file.status === "completed" || r.file.status === "mapped" || r.file.status === "imported"
+                      r.file.status === "completed" || r.file.status === "mapped" || r.file.status === "imported" || r.file.status === "review"
                         ? "valid"
-                        : "error",
+                        : r.file.status === "processing"
+                          ? "processing"
+                          : "error",
                     errorCount: r.file.status === "failed" || r.file.status === "error" ? 1 : 0,
                     completeness: 100,
-                    columnsMapped: [],
+                    columnsMapped: r.mapping ? r.mapping.column_mappings.filter(cm => cm.db_column && cm.db_column !== "unknown").slice(0, 3).map(cm => cm.db_column) : [],
                     errors: [],
                   }))}
                   onFixClick={(id) => setSelectedFileId(id)}
@@ -499,7 +527,7 @@ export default function Dashboard() {
                     name: r.file.filename,
                     size: r.file.file_size_bytes,
                     type: r.file.file_type,
-                    status: r.file.status === "completed" ? "valid" : r.file.status === "processing" ? "processing" : "error",
+                    status: r.file.status === "completed" || r.file.status === "mapped" || r.file.status === "imported" || r.file.status === "review" ? "valid" : r.file.status === "processing" ? "processing" : "error",
                     errorCount: 0,
                     completeness: 100,
                     columnsMapped: [],
@@ -521,14 +549,14 @@ export default function Dashboard() {
                     size: r.file.file_size_bytes,
                     type: r.file.file_type,
                     status:
-                      r.file.status === "completed" || r.file.status === "mapped" || r.file.status === "imported"
+                      r.file.status === "completed" || r.file.status === "mapped" || r.file.status === "imported" || r.file.status === "review"
                         ? "valid"
                         : r.file.status === "processing"
                           ? "processing"
                           : "error",
                     errorCount: r.file.status === "failed" || r.file.status === "error" ? 1 : 0,
                     completeness: 100,
-                    columnsMapped: r.mapping ? r.mapping.column_mappings.slice(0, 3).map(cm => cm.db_column) : [],
+                    columnsMapped: r.mapping ? r.mapping.column_mappings.filter(cm => cm.db_column && cm.db_column !== "unknown").slice(0, 3).map(cm => cm.db_column) : [],
                     errors: [],
                   }))}
                   onFixClick={(id) => setSelectedFileId(id)}
@@ -612,15 +640,64 @@ export default function Dashboard() {
                     </div>
                   </ModalHeader>
                   <ModalBody>
-                    {importingFileId && results.find((r) => r.file.id.toString() === importingFileId)?.mapping && (
-                      <MappingResult
-                        mapping={results.find((r) => r.file.id.toString() === importingFileId)!.mapping!}
-                        files={results.map((r) => ({ id: r.file.id.toString(), name: r.file.filename }))}
-                        selectedFileId={importingFileId}
-                        onFileSelect={handleOpenMappingModal}
-                        onImportSuccess={handleImportSuccess}
-                      />
-                    )}
+                    {importingFileId && (() => {
+                      const result = results.find((r) => r.file.id.toString() === importingFileId)
+                      if (!result) return null
+
+                      if (result.file.status === "processing") {
+                        const progress = fileProgress[result.file.id]
+                        return (
+                          <div className="flex flex-col items-center justify-center py-16 text-center">
+                            <div className="h-16 w-16 rounded-full bg-warning/10 flex items-center justify-center mb-4 animate-pulse">
+                              <Brain className="h-8 w-8 text-warning" />
+                            </div>
+                            <p className="font-semibold text-lg">Processing file...</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {progress ? `${progress.stage.charAt(0).toUpperCase() + progress.stage.slice(1)} — ${progress.message}` : "Waiting for ML pipeline..."}
+                            </p>
+                            {progress && (
+                              <div className="w-64 mt-4">
+                                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                  <div className="h-full bg-warning rounded-full transition-all duration-500" style={{ width: `${progress.percent}%` }} />
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">{progress.percent}%</p>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      }
+
+                      if (!result.mapping) {
+                        return (
+                          <div className="flex flex-col items-center justify-center py-16 text-center">
+                            <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                              <AlertCircle className="h-8 w-8 text-destructive" />
+                            </div>
+                            <p className="font-semibold text-lg">
+                              {result.file.status === "error" || result.file.status === "failed"
+                                ? "Processing failed"
+                                : "No mapping available"}
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {result.file.status === "error" || result.file.status === "failed"
+                                ? "The ML pipeline could not process this file. Try reprocessing."
+                                : "This file hasn't been processed yet."}
+                            </p>
+                          </div>
+                        )
+                      }
+
+                      return (
+                        <MappingResult
+                          mapping={result.mapping}
+                          files={results.filter(r => r.mapping).map((r) => ({ id: r.file.id.toString(), name: r.file.filename }))}
+                          selectedFileId={importingFileId}
+                          onFileSelect={handleOpenMappingModal}
+                          onImportSuccess={handleImportSuccess}
+                          fileStatus={result.file.status}
+                        />
+                      )
+                    })()}
                   </ModalBody>
                 </>
               )}
